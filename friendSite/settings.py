@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.auth',
+
+    'accounts',
     'core',
     'polls',
 ]

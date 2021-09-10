@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>Groups</h1>
+    <div class="container">
+    {% for group in groups %}
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Creator</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                    <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td><a href="{% url 'detail' group.id %}">{{group.name}}</a></td>
+                    <td>{{group.creator}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+    <div>
+{% endblock body %}

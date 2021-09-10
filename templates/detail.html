@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h1>Welcome to {{group.name}}'s group page!</h1>
+
+{% for friend in group.get_friends %}
+    <p>{{friend.user}}</p>
+{% endfor %}
+
+{% endblock body %}
+

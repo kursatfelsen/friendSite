@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block body %}
+
+<form action="{% url 'new_event' %}" method="POST">
+    {% csrf_token %}
+    {{form}}
+    <button type="submit" class="btn btn-danger">Create a new event</button>
+</form>
+{% endblock body %}

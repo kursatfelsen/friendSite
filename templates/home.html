@@ -1,27 +1,40 @@
 {% extends "base.html" %}
 
 {% block body %}
-<h1>Groups</h1>
+    <section class="jumbotron text-center">
+        <div class="container">
+          <h1 class="jumbotron-heading">My Friend Groups</h1>
+          <p class="lead text-muted">Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely.</p>
+          <p>
+            <a href="#" class="btn btn-primary my-2">Create a new group</a>
+            <a href="#" class="btn btn-secondary my-2">Join a new group</a>
+          </p>
+        </div>
+    </section>
     <div class="container">
-    {% for group in groups %}
-        <table class="table">
-            <thead class="thead-dark">
-                <tr>
-                <th scope="col">#</th>
-                <th scope="col">Name</th>
-                <th scope="col">Creator</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="album py-5 bg-light">
+            <div class="container">
+                <div class="row">
                 {% for group in groups %}
-                    <tr>
-                    <th scope="row">{{forloop.counter}}</th>
-                    <td><a href="{% url 'detail' group.id %}">{{group.name}}</a></td>
-                    <td>{{group.creator}}</td>
-                    </tr>
+                    <div class="col-md-4">
+                        <div class="card mb-4 box-shadow">
+                            <img class="card-img-top" src="{{group.img_url}}" alt="Card image cap">
+                            <div class="card-body">
+                            <h5 class="card-title">{{group.name}}</h5>
+                            <p class="card-text"> Group Creator: {{group.creator}}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                <a href="{% url 'detail' group.id %}"><button type="button" class="btn btn-sm btn-outline-secondary">View</button></a>
+                                <a href="#"><button type="button" class="btn btn-sm btn-outline-secondary">Edit</button></a>
+                                </div>
+                                <small class="text-muted">9 mins</small>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% endfor %}
+                </div>
+            </div>
+        </div>
     <div>
 {% endblock body %}

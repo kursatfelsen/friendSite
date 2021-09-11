@@ -1,12 +1,54 @@
 {% extends "base.html" %}
 
+
 {% block body %}
+    <section class="jumbotron text-center">
+        <div class="container">
+          <h1 class="jumbotron-heading">Welcome to {{group.name}}'s group page!</h1>
+          <p class="lead text-muted">You can see your friend group area and arrange new events here!</p>
+          <p>
+            <a href="#" class="btn btn-primary my-2">Create a new event</a>
+            <a href="#" class="btn btn-secondary my-2">Edit an event</a>
+          </p>
+        </div>
+    </section>
+    <div class="container">
+        <div class="row">
+            
+            <div class="col-sm">
+                <div class="card" style="width: 18rem;">
+                    <div class="card-header">
+                        Events in this group
+                    </div>
+                    <ul class="list-group list-group-flush">
+                    {% for event in events %}
+                        <li class="list-group-item">{{event}}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
 
-<h1>Welcome to {{group.name}}'s group page!</h1>
-
-{% for friend in group.get_friends %}
-    <p>{{friend.user}}</p>
-{% endfor %}
-
+            <div class="col-sm">
+                <div class="card" style="width: 18rem;">
+                    <div class="card-header">
+                        Friends in this group
+                    </div>
+                    <ul class="list-group list-group-flush">
+                    {% for friend in group.get_friends %}
+                        <li class="list-group-item">{{friend.user}}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <br>
+        <form method="get" action="{% url 'new_event' %}">
+            <button class="btn btn-danger" type="submit">Create an event!</button>
+        </form>
+    </div>
+    <br>
 {% endblock body %}
 
+<div class="col-sm">
+    One of three columns
+</div>

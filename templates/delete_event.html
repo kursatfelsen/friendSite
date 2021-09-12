@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block body %}
+<p>{{event.name}}</p>
+<p>{{event.date}}</p>
+<p>{{event.location}}</p>
+
+<form action="{%url 'event_delete' event.id %}" method="post"> {% csrf_token %}<button class="btn btn-danger"> Delete the event?</button></form>
+{% endblock body %}

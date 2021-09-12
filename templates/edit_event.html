@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
 
-<form action="{% url 'new_event' %}" method="POST">
+<form action="{% url 'event_edit' event.id %}" method="POST">
     {% csrf_token %}
     {% for field in form %}
     <div class="form-group">
@@ -9,8 +9,7 @@
         {{ field }}
     </div>
     {% endfor %}
-
-    <button type="submit" class="btn btn-danger">Create a new event</button>
+    <button type="submit" class="btn btn-primary">Edit</button>
 </form>
-
+    <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
 {% endblock body %}

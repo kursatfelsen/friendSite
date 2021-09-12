@@ -22,7 +22,11 @@
                     </div>
                     <ul class="list-group list-group-flush">
                     {% for event in events %}
-                        <li class="list-group-item">{{event}}</li>
+                        <li class="list-group-item">
+                            <a href="{% url 'event_detail' event.id %}">{{event}}</a>
+                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary">Edit</button></a>
+                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
+                        </li>
                     {% endfor %}
                     </ul>
                 </div>

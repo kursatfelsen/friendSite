@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     
     'widget_tweaks',
+    'googlemaps',
 
     'accounts',
     'core',

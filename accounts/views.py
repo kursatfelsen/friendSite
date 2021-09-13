@@ -17,6 +17,20 @@ class SignupView(View):
         self.form = UserCreationForm()
         return self.render(request)
 
+    def post(self,request):
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            Friend.objects.create(user=user)
+            return redirect('home')
+        messages.error(request,'Form is invalid')
+        self.form = UserCreationForm()
+        return self.render(request)
+
 
 
 class LoginView(View):
@@ -69,5 +83,20 @@ class ProfileView(CustomLoginRequiredMixin,View):
 
     def get(self, request, username):
         self.user = User.objects.get(username=username)
-        self.friend = Friend.objects.get(user=self.user)
-        return self.render(request)
+        if request.user.username == self.user.username:
+            self.friend = Friend.objects.get(user=self.user)
+            return self.render(request) 
+        messages.error(request, "You have no access to that area.")
+        return redirect('home')
+
+
+
+class CalendarView(CustomLoginRequiredMixin, View):
+    def render(self,request):
+        return render(request,'calendar.html')
+    def get(self,request, username):
+        self.user = User.objects.get(username=username)
+        if request.user.username == self.user.username:
+            return self.render(request)
+        messages.error(request, "You have no access to that area.")
+        return redirect('home')

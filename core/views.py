@@ -1,27 +1,41 @@
+from django.contrib.auth.models import User
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
+
+from .models import Vote
+
 # Create your views here.
 
 from .forms import NewEventForm
-from .models import Event, FriendGroup
+from .models import Event, Friend, FriendGroup
 
 class HomePageView(View):
     def render(self, request):
         return render(request, 'home.html', {'groups': self.groups})
 
     def get(self, request, *args, **kwargs):
-        self.groups = FriendGroup.objects.all()
+        try:
+            self.groups = FriendGroup.objects.filter(friend = Friend.objects.get(user__id = request.user.id))
+        except Friend.DoesNotExist:
+            self.groups = []
         return self.render(request)
 
 class GroupDetailView(View):
     def render(self, request):
-        return render(request,'detail.html',{'group':self.group,'events':self.events})
+        users = User.objects.all()
+        return render(request,'detail.html',{'group':self.group,'events':self.events,'users':users})
 
     def get(self, request, group_id):
         self.group = FriendGroup.objects.get(id = group_id)
         self.events = Event.objects.filter(group__id=group_id)
         return self.render(request)
+
+    def post(self,request,group_id):
+        new_user = request.POST['new_user']
+        Friend.objects.get(user__id=new_user).friendGroup.add(FriendGroup.objects.get(id=group_id))
+        return redirect('detail',group_id=group_id)
+
 
 
 class NewEventView(View):
@@ -84,3 +98,16 @@ class EventDeleteView(View):
         group_id = event.group.id
         event.delete()
         return redirect('detail',group_id=group_id)
+
+
+def vote(request, group_id, event_id, status):
+    friend = Friend.objects.get(user__id = request.user.id)
+    friend_id = friend.id
+    if status == 0:
+        status = False
+    else:
+        status = True
+    Vote.objects.filter(event_id=event_id, friend__id = friend_id).delete()
+    Vote.objects.create(friend_id=friend_id,event_id=event_id,status=status)
+    return redirect('detail',group_id = group_id)
+

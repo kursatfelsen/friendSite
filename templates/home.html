@@ -15,24 +15,29 @@
         <div class="album py-5 bg-light">
             <div class="container">
                 <div class="row">
-                {% for group in groups %}
-                    <div class="col-md-4">
-                        <div class="card mb-4 box-shadow">
-                            <img class="card-img-top" src="{{group.img_url}}" alt="Card image cap">
-                            <div class="card-body">
-                            <h5 class="card-title">{{group.name}}</h5>
-                            <p class="card-text"> Group Creator: {{group.creator}}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="btn-group">
-                                <a href="{% url 'detail' group.id %}"><button type="button" class="btn btn-sm btn-outline-secondary">View</button></a>
-                                <a href="#"><button type="button" class="btn btn-sm btn-outline-secondary">Edit</button></a>
+                {% if user.is_authenticated %}
+                    {% for group in groups %}
+                        <div class="col-md-4">
+                            <div class="card mb-4 box-shadow">
+                                <a href="{% url 'detail' group.id %}"><img class="card-img-top" src="{{group.img_url}}" alt="Card image cap"></a>
+                                <div class="card-body">
+                                <a href="{% url 'detail' group.id %}"><h5 class="card-title">{{group.name}}</h5></a>
+                                <p class="card-text"> Group Creator: {{group.creator}}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                    <a href="{% url 'detail' group.id %}"><button type="button" class="btn btn-sm btn-outline-secondary">View</button></a>
+                                    <a href="#"><button type="button" class="btn btn-sm btn-outline-secondary">Edit</button></a>
+                                    </div>
+                                    <small class="text-muted">9 mins</small>
                                 </div>
-                                <small class="text-muted">9 mins</small>
-                            </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <h2>PLEASE LOGIN</h2>
+                {% endif %}
+
                 </div>
             </div>
         </div>

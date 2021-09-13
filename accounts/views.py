@@ -39,16 +39,31 @@ class LoginView(View):
             return self.render(request)
 
 
-class LogoutView(LoginRequiredMixin,View):
+class CustomLoginRequiredMixin(LoginRequiredMixin):
+    """ The LoginRequiredMixin extended to add a relevant message to the
+    messages framework by setting the ``permission_denied_message``
+    attribute. """
+    permission_denied_message = 'You have to be logged in to access that page'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.add_message(request, messages.WARNING,
+                                self.permission_denied_message)
+            return self.handle_no_permission()
+        return super(CustomLoginRequiredMixin, self).dispatch(
+            request, *args, **kwargs
+        )
+
+class LogoutView(CustomLoginRequiredMixin,View):
     login_url = 'login'
     def get(self,request):
-        messages.info(request,'You logged out.')
+        messages.error(request,self.permission_denied_message)
         logout(request)
         return redirect('home')
 
 
 
-class ProfileView(View):
+class ProfileView(CustomLoginRequiredMixin,View):
     def render(self,request):
         return render(request,'profile.html',{'user':self.user,'friend':self.friend})
 

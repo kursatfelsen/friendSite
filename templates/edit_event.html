@@ -1,15 +1,41 @@
 {% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/google_places.css' %}" />
+<script src="{% static 'js/google_places.js' %}"></script>
+{% endblock extra_head %}
+
 {% block body %}
 
-<form action="{% url 'event_edit' event.id %}" method="POST">
+
+<form action="{% url 'event_edit' event.id %}" id="address-form" method="POST">
     {% csrf_token %}
-    {% for field in form %}
-    <div class="form-group">
-        <label>{{field.label}}</label>
-        {{ field }}
-    </div>
+    {% for field in form.visible_fields %}
+        <div class="form-group">
+        {{ field.label }} {{ field }}
+        </div>
     {% endfor %}
-    <button type="submit" class="btn btn-primary">Edit</button>
+    <label for="pac-input"> Select location</label>
+    <input
+      id="pac-input"
+      class="controls"
+      type="text"
+      placeholder="Search Box"
+      value="{{location_address}}"
+    />
+    <div id="map"></div>
+    {% for field in form.hidden_fields %}
+        {{ field }}
+    {% endfor %}
+
+    <button type="submit" class="btn btn-danger">Create a new event</button>
 </form>
     <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
 {% endblock body %}
+
+
+{% block extra_script %}
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initAutocomplete&libraries=places&v=weekly" async></script>
+
+{% endblock %}

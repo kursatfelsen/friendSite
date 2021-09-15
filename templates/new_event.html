@@ -1,16 +1,40 @@
 {% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/google_places.css' %}" />
+<script src="{% static 'js/google_places.js' %}"></script>
+{% endblock extra_head %}
+
 {% block body %}
 
-<form action="{% url 'new_event' %}" method="POST">
+
+<form action="{% url 'new_event' %}" id="address-form" method="POST">
     {% csrf_token %}
-    {% for field in form %}
-    <div class="form-group">
-        <label>{{field.label}}</label>
+    {% for field in form.visible_fields %}
+        <div class="form-group">
+        {{ field.label }} {{ field }}
+        </div>
+    {% endfor %}
+    <label for="pac-input"> Select location</label>
+    <input
+      id="pac-input"
+      class="controls"
+      type="text"
+      placeholder="Search Box"
+    />
+    <div id="map"></div>
+    {% for field in form.hidden_fields %}
         {{ field }}
-    </div>
     {% endfor %}
 
     <button type="submit" class="btn btn-danger">Create a new event</button>
 </form>
 
 {% endblock body %}
+
+
+{% block extra_script %}
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initAutocomplete&libraries=places&v=weekly" async></script>
+
+{% endblock %}

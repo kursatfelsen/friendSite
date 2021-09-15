@@ -33,7 +33,7 @@ class GroupDetailView(View):
 
     def post(self,request,group_id):
         new_user = request.POST['new_user']
-        Friend.objects.get(user__id=new_user).friendGroup.add(FriendGroup.objects.get(id=group_id))
+        Friend.objects.get(user__id=new_user).join_group(group_id)
         return redirect('detail',group_id=group_id)
 
 
@@ -49,10 +49,23 @@ class NewEventView(View):
     def post(self, request):
         self.form = NewEventForm(request.POST)
         if self.form.is_valid():
+            if self.form['location_name'] == "undefined":
+                self.form['location_name'] = ""
+            if self.form['location_address'] == "undefined":
+                self.form['location_address'] = ""
+            if self.form['location_phone_number'] == "undefined":
+                self.form['location_phone_number'] = ""
+            if self.form['location_website'] == "undefined":
+                self.form['location_website'] = ""
+            if self.form['location_rating'] == "undefined":
+                self.form['location_rating'] = ""
+            if self.form['location_type'] == "undefined":
+                self.form['location_type'] = ""
+            if self.form['location_photo_url'] == "undefined":
+                self.form['location_photo_url'] = ""
             event = self.form.save()
             return  redirect('event_detail',event.id)
         return self.render(request)
-
 
 class EventDetailView(View):
     def render(self, request):
@@ -65,11 +78,12 @@ class EventDetailView(View):
 
 class EventEditView(View):
     def render(self, request):
-        return render(request,'edit_event.html',{'form':self.form,'event':self.event})
+        return render(request,'edit_event.html',{'form':self.form,'event':self.event,'location_address':self.location_address})
 
     def get(self, request, event_id):
         self.event = Event.objects.get(id=event_id)
         self.form = NewEventForm(instance=self.event)
+        self.location_address = self.event.location_address
         return self.render(request)
 
     def post(self, request,event_id):
@@ -111,3 +125,7 @@ def vote(request, group_id, event_id, status):
     Vote.objects.create(friend_id=friend_id,event_id=event_id,status=status)
     return redirect('detail',group_id = group_id)
 
+
+def dismiss(request, group_id, user_id):
+    Friend.objects.get(user__id=user_id).leave_group(group_id)
+    return redirect('detail',group_id = group_id)

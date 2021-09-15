@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.views import View
-
+from django.conf import settings
 # Create your views here.
 
 class SignupView(View):
@@ -100,3 +100,14 @@ class CalendarView(CustomLoginRequiredMixin, View):
             return self.render(request)
         messages.error(request, "You have no access to that area.")
         return redirect('home')
+
+
+def testview(request):
+    if request.method == 'POST':
+        print(request.POST.get('street_number'))
+        print(request.POST.get('county'))
+        print(request.POST.get('postal_code'))
+        print(request.POST.get('longitude'))
+    return render(request,'test.html',{'google_api_key':settings.GOOGLE_API_KEY,'base_country':settings.BASE_COUNTRY})
+
+

@@ -1,7 +1,58 @@
 {% extends "base.html" %}
 {% block body %}
+
 <h1>EVENT DETAIL VIEW</h1>
 <p>{{event.name}}</p>
 <p>{{event.date}}</p>
-<p>{{event.location}}</p>
+<p>{{event.state}}</p>
+<p>{{event.location_address}}</p>
+<p>{{event.start_date}}</p>
+<p>{{event.end_date}}</p>
+
+<div class="card" style="width: 50rem;">
+  <img class="card-img-top" src="{{event.location_photo_url}}" alt="Card image cap" >
+  <div class="row">
+    <div class="col">
+        <div class="card-body">
+            <a href="{{event.location_website}}"><h5 class="card-title">{{event.location_name}}</h5></a>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Phone: {{event.location_phone_number}}</li>
+                <li class="list-group-item">Rating: {{event.location_rating}}</li>
+                <li class="list-group-item">Type: {{event.location_type}}</li>
+                <li class="list-group-item">{{event.location_address}}</li>
+            </ul>
+            <a href="#" class="btn btn-primary">Call</a>
+        </div>
+    </div>
+    <div class="col">
+    <div id="map" style="height: 400px; width: 100%;"></div>
+    </div>
+  </div>
+</div>
+
 {% endblock body %}
+
+
+{% block extra_script %}
+
+<script>
+// Initialize and add the map
+function initMap() {
+  // The location of place
+  const place = { lat: parseFloat({{event.location_latitude}}), lng: parseFloat({{event.location_longitude}}) };
+  // The map, centered at place
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 13,
+    center: place,
+  });
+  // The marker, positioned at place
+  const marker = new google.maps.Marker({
+    position: place,
+    map: map,
+  });
+}
+
+</script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initMap&libraries=&v=weekly" async></script>
+{% endblock extra_script %}
+    

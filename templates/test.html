@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/google_places.css' %}" />
+<script src="{% static 'js/google_places.js' %}"></script>
+{% endblock extra_head %}
+
+{% block body %}
+
+<h3>Django Google API Course - User Profile</h3>
+    <input
+      id="pac-input"
+      class="controls"
+      type="text"
+      placeholder="Search Box"
+    />
+    <div id="map"></div>
+    <form id="address-form" action="" method="get" autocomplete="off">
+      <p class="note"><em>* = required field</em></p>
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">Adress*</span>
+        <input id="formatted_address" name="formatted_address" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">Number*</span>
+        <input id="formatted_phone_number" name="formatted_phone_number" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">place_id*</span>
+        <input id="place_id" name="place_id" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">website*</span>
+        <input id="website" name="website" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">rating*</span>
+        <input id="rating" name="rating" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">photo*</span>
+        <input id="photo" name="photo" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">type*</span>
+        <input id="type" name="type" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">latitude*</span>
+        <input id="latitude" name="latitude" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">longtitude*</span>
+        <input id="longtitude" name="longtitude" required />
+      </label>
+      <label class="slim-field-left">
+        <span class="form-label">name*</span>
+        <input id="name" name="name" required />
+      </label>
+      <button type="button" class="my-button">Save address</button>
+      <!-- Reset button provided for development testing convenience.
+  Not recommended for user-facing forms due to risk of mis-click when aiming for Submit button. -->
+      <input type="reset" value="Clear form" />
+    </form>
+
+{% endblock %}
+
+
+
+{% block extra_script %}
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initAutocomplete&libraries=places&v=weekly" async></script>
+
+{% endblock %}

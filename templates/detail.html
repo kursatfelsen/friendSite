@@ -42,7 +42,7 @@
                     </div>
                     <ul class="list-group list-group-flush">
                     {% for friend in group.get_friends %}
-                        <li class="list-group-item">{{friend.user}}</li>
+                        <li class="list-group-item">{{friend.user}} <a href="{% url 'dismiss' group.id friend.user.id %}"><button class="btn btn-danger">Dismiss</button></a></li>
                     {% endfor %}
                     </ul>
                     <div class="card-footer">
@@ -54,7 +54,7 @@
                                 <option value="{{user.id}}">{{user.username}}</option>
                             {% endfor %}
                             </select>
-                            <button class="btn btn-primary" type="submit">Add frined</button>
+                            <button class="btn btn-primary" type="submit">Add friend</button>
                         </form>
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+from accounts.forms import UserProfileForm
 from core.models import Friend
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -79,12 +80,14 @@ class LogoutView(CustomLoginRequiredMixin,View):
 
 class ProfileView(CustomLoginRequiredMixin,View):
     def render(self,request):
-        return render(request,'profile.html',{'user':self.user,'friend':self.friend})
+        return render(request,'profile.html',{'user':self.user,'friend':self.friend,'form':self.form,'groups':self.friendgroups})
 
     def get(self, request, username):
         self.user = User.objects.get(username=username)
+        self.form = UserProfileForm(instance=request.user)
         if request.user.username == self.user.username:
             self.friend = Friend.objects.get(user=self.user)
+            self.friendgroups = self.friend.friendGroup.all()
             return self.render(request) 
         messages.error(request, "You have no access to that area.")
         return redirect('home')

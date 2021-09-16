@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.widgets import TimeInput
 
 from .models import Event
 
@@ -7,12 +8,14 @@ class DateInput(forms.DateInput):
     
 
 class NewEventForm(forms.ModelForm):
-    
     class Meta:
         model = Event
         fields = [
             'name', 
-            'start_date','end_date',
+            'start_date',
+            'start_time',
+            'end_date',
+            'end_time',
             'location_id',
             'location_name',
             'location_address',
@@ -28,6 +31,8 @@ class NewEventForm(forms.ModelForm):
         widgets = {
             'start_date': DateInput(),
             'end_date': DateInput(),
+            'start_time': TimeInput(attrs={'class':'timepicker'}),
+            'end_time': TimeInput(attrs={'class':'timepicker'}),
             'location_id': forms.HiddenInput(attrs={
             'id': 'place_id',
             }),
@@ -59,3 +64,21 @@ class NewEventForm(forms.ModelForm):
             'id': 'latitude',
             }) ,
         }
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        if cleaned_data['location_name'] == "undefined":
+            cleaned_data['location_name'] = ""
+        if cleaned_data['location_address'] == "undefined":
+            cleaned_data['location_address'] = ""
+        if cleaned_data['location_phone_number'] == "undefined":
+            cleaned_data['location_phone_number'] = ""
+        if cleaned_data['location_website'] == "undefined":
+            cleaned_data['location_website'] = ""
+        if cleaned_data['location_rating'] == "undefined":
+            cleaned_data['location_rating'] = ""
+        if cleaned_data['location_type'] == "undefined":
+            cleaned_data['location_type'] = ""
+        if cleaned_data['location_photo_url'] == "undefined":
+            cleaned_data['location_photo_url'] = ""
+        return cleaned_data

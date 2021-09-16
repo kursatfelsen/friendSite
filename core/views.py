@@ -26,10 +26,7 @@ class HomePageView(View):
 
 class GroupDetailView(CustomLoginRequiredMixin, View):
     def render(self, request):
-        #TODO filter users that are in group
         friends_that_are_not_in_group = Friend.objects.filter(~Q(friendGroup__in=[self.group]))
-
-        #TODO
         return render(request,'detail.html',{'group':self.group,'events':self.events,'friends':friends_that_are_not_in_group})
 
     def get(self, request, group_id):
@@ -58,20 +55,6 @@ class NewEventView(CustomLoginRequiredMixin, View):
     def post(self, request):
         self.form = NewEventForm(request.POST)
         if self.form.is_valid():
-            if self.form['location_name'] == "undefined":
-                self.form['location_name'] = ""
-            if self.form['location_address'] == "undefined":
-                self.form['location_address'] = ""
-            if self.form['location_phone_number'] == "undefined":
-                self.form['location_phone_number'] = ""
-            if self.form['location_website'] == "undefined":
-                self.form['location_website'] = ""
-            if self.form['location_rating'] == "undefined":
-                self.form['location_rating'] = ""
-            if self.form['location_type'] == "undefined":
-                self.form['location_type'] = ""
-            if self.form['location_photo_url'] == "undefined":
-                self.form['location_photo_url'] = ""
             event = self.form.save()
             return  redirect('event_detail',event.id)
         return self.render(request)

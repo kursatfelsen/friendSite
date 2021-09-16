@@ -7,10 +7,11 @@
 <p>{{event.state}}</p>
 <p>{{event.location_address}}</p>
 <p>{{event.start_date}}</p>
+<p>{{event.start_time}}</p>
 <p>{{event.end_date}}</p>
-
+<p>{{event.end_time}}</p>
 <div class="card" style="width: 50rem;">
-  <img class="card-img-top" src="{{event.location_photo_url}}" alt="Card image cap" >
+  <img class="card-img-top" src="{% if event.location_photo_url %}{{event.location_photo_url}}{% else %}https://pegasuseventsindia.files.wordpress.com/2014/04/eventmanagement-1.jpg?w=1400&h=400&crop=1{% endif %}" alt="Card image cap" >
   <div class="row">
     <div class="col">
         <div class="card-body">

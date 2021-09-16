@@ -46,16 +46,20 @@
                     {% endfor %}
                     </ul>
                     <div class="card-footer">
-                        Add a new friend
-                        <form action="{% url 'detail' group.id %}" method="post">
-                            {% csrf_token %}
-                            <select name="new_user">
-                            {% for friend in friends %}
-                                <option value="{{friend.user.id}}">{{friend.user.username}}</option>
-                            {% endfor %}
-                            </select>
-                            <button class="btn btn-primary" type="submit">Add friend</button>
-                        </form>
+                        {% if friends|length %}
+                            <h5>Add a new friend</h5>
+                            <form action="{% url 'detail' group.id %}" method="post">
+                                {% csrf_token %}
+                                <select name="new_user">
+                                {% for friend in friends %}
+                                    <option value="{{friend.user.id}}">{{friend.user.username}}</option>
+                                {% endfor %}
+                                </select>
+                                <button class="btn btn-primary" type="submit">Add friend</button>
+                            </form>
+                        {% else %}
+                            <p>Wow there are no friends that tou can add.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>

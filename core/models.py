@@ -18,11 +18,8 @@ class FriendGroup(models.Model):
 class Friend(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     friendGroup = models.ManyToManyField(FriendGroup,blank=True)
-
-    first_name = models.CharField(max_length=50,blank=True)
-    second_name = models.CharField(max_length=50,blank=True)
     description = models.TextField(blank=True)
-
+    img = models.TextField(blank=True)
     def __str__(self):
         return self.user.username
 
@@ -46,11 +43,13 @@ class Event(models.Model):
         (HAPPENED, 'Happened'),
     ]
     name = models.TextField(max_length=50)
-    start_date = models.DateTimeField(null=True)
-    end_date = models.DateTimeField(null=True)
+    start_date = models.DateField(null=True)
+    start_time = models.TimeField(null=True)
+    end_date = models.DateField(null=True)
+    end_time = models.TimeField(null=True)
     location_id = models.CharField(verbose_name="Id",max_length=100,null=True, blank=True)
     location_name = models.CharField(verbose_name="name",max_length=200,null=True,blank=True)
-    location_address = models.CharField(verbose_name="Address",max_length=100, null=True, blank=True)
+    location_address = models.CharField(verbose_name="Address",max_length=300, null=True, blank=True)
     location_phone_number = models.CharField(verbose_name="Phone",max_length=100, null=True, blank=True)
     location_website = models.CharField(verbose_name="Website",max_length=1000, null=True, blank=True)
     location_rating = models.CharField(verbose_name="Rating", max_length=40 ,null=True, blank=True)

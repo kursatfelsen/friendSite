@@ -1,9 +1,12 @@
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
+from django.db.models import Q
 
 from .models import Vote
+from accounts.views import CustomLoginRequiredMixin
 
 # Create your views here.
 
@@ -21,15 +24,21 @@ class HomePageView(View):
             self.groups = []
         return self.render(request)
 
-class GroupDetailView(View):
+class GroupDetailView(CustomLoginRequiredMixin, View):
     def render(self, request):
-        users = User.objects.all()
-        return render(request,'detail.html',{'group':self.group,'events':self.events,'users':users})
+        #TODO filter users that are in group
+        friends_that_are_not_in_group = Friend.objects.filter(~Q(friendGroup__in=[self.group]))
+
+        #TODO
+        return render(request,'detail.html',{'group':self.group,'events':self.events,'friends':friends_that_are_not_in_group})
 
     def get(self, request, group_id):
         self.group = FriendGroup.objects.get(id = group_id)
-        self.events = Event.objects.filter(group__id=group_id)
-        return self.render(request)
+        if Friend.objects.get(user__id=request.user.id) in self.group.get_friends():
+            self.events = Event.objects.filter(group__id=group_id)
+            return self.render(request)
+        messages.error(request,'You do not belong to that group')
+        return redirect('home')
 
     def post(self,request,group_id):
         new_user = request.POST['new_user']
@@ -38,7 +47,7 @@ class GroupDetailView(View):
 
 
 
-class NewEventView(View):
+class NewEventView(CustomLoginRequiredMixin, View):
     def render(self, request):
         return render(request,'new_event.html',{'form':self.form})
 
@@ -67,7 +76,7 @@ class NewEventView(View):
             return  redirect('event_detail',event.id)
         return self.render(request)
 
-class EventDetailView(View):
+class EventDetailView(CustomLoginRequiredMixin, View):
     def render(self, request):
         return render(request,'event_detail.html',{'event':self.event})
 
@@ -76,7 +85,7 @@ class EventDetailView(View):
         return self.render(request)
 
 
-class EventEditView(View):
+class EventEditView(CustomLoginRequiredMixin, View):
     def render(self, request):
         return render(request,'edit_event.html',{'form':self.form,'event':self.event,'location_address':self.location_address})
 
@@ -91,15 +100,13 @@ class EventEditView(View):
         if form.is_valid():
             event = Event.objects.get(id=event_id)
             event.name = form.cleaned_data['name']
-            event.date = form.cleaned_data['date']
-            event.location = form.cleaned_data['location']
             event.group = form.cleaned_data['group']
             event.save()
             return redirect('event_detail',event_id=event_id)
         return self.render(request)
 
 
-class EventDeleteView(View):
+class EventDeleteView(CustomLoginRequiredMixin, View):
     def render(self, request):
         return render(request,'delete_event.html',{'event':self.event})
 
@@ -114,18 +121,20 @@ class EventDeleteView(View):
         return redirect('detail',group_id=group_id)
 
 
-def vote(request, group_id, event_id, status):
-    friend = Friend.objects.get(user__id = request.user.id)
-    friend_id = friend.id
-    if status == 0:
-        status = False
-    else:
-        status = True
-    Vote.objects.filter(event_id=event_id, friend__id = friend_id).delete()
-    Vote.objects.create(friend_id=friend_id,event_id=event_id,status=status)
-    return redirect('detail',group_id = group_id)
+class VoteView(CustomLoginRequiredMixin, View):
+    def get(self,request, group_id, event_id, status):
+        friend = Friend.objects.get(user__id = request.user.id)
+        friend_id = friend.id
+        if status == 0:
+            status = False
+        else:
+            status = True
+        Vote.objects.filter(event_id=event_id, friend__id = friend_id).delete()
+        Vote.objects.create(friend_id=friend_id,event_id=event_id,status=status)
+        return redirect('detail',group_id = group_id)
 
 
-def dismiss(request, group_id, user_id):
-    Friend.objects.get(user__id=user_id).leave_group(group_id)
-    return redirect('detail',group_id = group_id)
+class DismissView(CustomLoginRequiredMixin, View):
+    def get(self,request,group_id, user_id):
+        Friend.objects.get(user__id=user_id).leave_group(group_id)
+        return redirect('detail',group_id = group_id)

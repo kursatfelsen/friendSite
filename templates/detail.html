@@ -50,8 +50,8 @@
                         <form action="{% url 'detail' group.id %}" method="post">
                             {% csrf_token %}
                             <select name="new_user">
-                            {% for user in users %}
-                                <option value="{{user.id}}">{{user.username}}</option>
+                            {% for friend in friends %}
+                                <option value="{{friend.user.id}}">{{friend.user.username}}</option>
                             {% endfor %}
                             </select>
                             <button class="btn btn-primary" type="submit">Add friend</button>
@@ -66,8 +66,5 @@
         </form>
     </div>
     <br>
-{% endblock body %}
 
-<div class="col-sm">
-    One of three columns
-</div>
+{% endblock body %}

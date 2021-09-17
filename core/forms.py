@@ -1,11 +1,15 @@
 from django import forms
 from django.forms.widgets import TimeInput
-
+from django.core.exceptions import ValidationError
+from django.db import models
 from .models import Event
+import datetime
 
 class DateInput(forms.DateInput):
     input_type = 'date'
     
+class TimeInput(forms.TimeInput):
+    input_type = 'time'
 
 class NewEventForm(forms.ModelForm):
     class Meta:
@@ -29,10 +33,16 @@ class NewEventForm(forms.ModelForm):
             'group',
         ]
         widgets = {
-            'start_date': DateInput(),
-            'end_date': DateInput(),
-            'start_time': TimeInput(attrs={'class':'timepicker'}),
-            'end_time': TimeInput(attrs={'class':'timepicker'}),
+            'start_date': DateInput(attrs={
+            'min': datetime.date.today(),
+            'max': datetime.date.today()+ datetime.timedelta(days=3650)
+            }),
+            'end_date': DateInput(attrs={
+            'min': datetime.date.today(),
+            'max': datetime.date.today()+ datetime.timedelta(days=3650)
+            }),
+            'start_time': TimeInput(),
+            'end_time': TimeInput(),
             'location_id': forms.HiddenInput(attrs={
             'id': 'place_id',
             }),
@@ -66,7 +76,15 @@ class NewEventForm(forms.ModelForm):
         }
     def clean(self):
         cleaned_data = super().clean()
+        print(cleaned_data['start_date'])
+        print(cleaned_data['start_date'] > cleaned_data['end_date'])
+
+        if cleaned_data['start_date'] > cleaned_data['end_date']:
+            raise ValidationError('End date must be later than start date.')
+        if cleaned_data['start_date'] < datetime.datetime.now().date():
+            raise ValidationError('Start date must be later than now.')
         
+
         if cleaned_data['location_name'] == "undefined":
             cleaned_data['location_name'] = ""
         if cleaned_data['location_address'] == "undefined":

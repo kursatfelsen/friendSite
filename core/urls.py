@@ -10,5 +10,6 @@ urlpatterns = [
     path('event/edit/<int:event_id>',EventEditView.as_view(),name = 'event_edit'),
     path('event/delete/<int:event_id>',EventDeleteView.as_view(),name='event_delete'),
     path('detail/<int:group_id>/vote/<int:event_id>/<int:status>', VoteView.as_view(),name='vote'),
-    path('detail/<int:group_id>/dismiss/<int:user_id>',DismissView.as_view(),name='dismiss'),
+    path('dismiss/',dismiss,name='dismiss'),
+    path('vote/',vote,name='vote'),
 ]

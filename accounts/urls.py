@@ -9,4 +9,5 @@ urlpatterns = [
     path('profile/<slug:username>/',ProfileView.as_view(), name='profile'),
     path('profile/<slug:username>/calendar/',CalendarView.as_view(), name='calendar'),
     path('test',testview,name='test'),
+    path('signup/validate_username/',validate_username, name='validate_username'),
 ]

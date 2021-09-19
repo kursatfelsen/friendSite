@@ -24,8 +24,8 @@
                     {% for event in events %}
                         <li class="list-group-item">
                             <a href="{% url 'event_detail' event.id %}">{{event}}</a>
-                            <p>Yeah: {{ event.getYeas }}</p> <a href="{% url 'vote' group.id event.id 1 %}"><button>Vote Yeah</button></a>
-                            <p>Na: {{ event.getNas }}</p> <a href="{% url 'vote' group.id event.id 0 %}"><button>Vote Na</button></a>
+                            <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"></p> <button vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button>
+                            <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"></p> <button vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button>
                             <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary">Edit</button></a>
                             <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
 
@@ -42,7 +42,7 @@
                     </div>
                     <ul class="list-group list-group-flush">
                     {% for friend in group.get_friends %}
-                        <li class="list-group-item">{{friend.user}} <a href="{% url 'dismiss' group.id friend.user.id %}"><button class="btn btn-danger">Dismiss</button></a></li>
+                        <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger">Dismiss</button></li>
                     {% endfor %}
                     </ul>
                     <div class="card-footer">
@@ -66,9 +66,44 @@
         </div>
         <br>
         <form method="get" action="{% url 'new_event' %}">
-            <button class="btn btn-danger" type="submit">Create an event!</button>
+            <button class="btn btn-danger" type="submit" >Create an event!</button>
         </form>
     </div>
+    <button class="btn btn-danger" id="test" type="submit" onclick=fade_out()>Create an event!</button>
     <br>
 
 {% endblock body %}
+
+{% block extra_script %}
+
+
+<script>
+
+function dismiss(u_id, g_id){
+        $.ajax({
+            url: {% url 'dismiss' %},
+            type: "GET",
+            data: {'user_id': u_id,'group_id':g_id},
+            success: function (data) {
+                document.getElementById(u_id).remove();
+            }
+        });
+    }
+
+</script>
+<script>
+
+function vote(u_id, e_id, status){
+        $.ajax({
+            url: {% url 'vote' %},
+            type: "GET",
+            data: {'user_id': u_id,'event_id':e_id,'status':status},
+            success: function (data) {
+                document.getElementById(e_id+'-0').value = data.nas;
+                document.getElementById(e_id+'-1').value = data.yeas;
+            }
+        });
+    }
+</script>
+
+{% endblock extra_script %}

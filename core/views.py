@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from django.db.models import Q
@@ -121,3 +121,40 @@ class DismissView(CustomLoginRequiredMixin, View):
     def get(self,request,group_id, user_id):
         Friend.objects.get(user__id=user_id).leave_group(group_id)
         return redirect('detail',group_id = group_id)
+
+
+def vote(request):
+    user_id = request.GET.get('user_id', None)
+    event_id = request.GET.get('event_id', None)
+    status = request.GET.get('status', None)
+    if status == "0":
+        status = False
+    else:
+        status = True
+    Vote.objects.filter(event_id=event_id, friend__user__id = user_id).delete()
+
+    Vote.objects.create(friend_id=Friend.objects.get(user_id = user_id).id,event_id=event_id,status = status)
+
+    event = Event.objects.get(id=event_id)
+    data = {
+        'yeas': event.getYeas(),
+        'nas': event.getNas(),
+    }
+    return JsonResponse(data)
+
+def dismiss(request):
+    
+    user_id = request.GET.get('user_id', None)
+    group_id = request.GET.get('group_id', None)
+    print(user_id)
+    print(group_id)
+    try:
+        Friend.objects.get(user__id=user_id).leave_group(group_id)
+        data = {
+            'dismissed': True
+        }
+    except:
+        data = {
+            'dismissed': False
+        }
+    return JsonResponse(data)

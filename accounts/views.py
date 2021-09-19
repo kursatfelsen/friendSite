@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.views import View
 from django.conf import settings
+from django.http import JsonResponse
 # Create your views here.
 
 class SignupView(View):
@@ -114,3 +115,11 @@ def testview(request):
     return render(request,'test.html',{'google_api_key':settings.GOOGLE_API_KEY,'base_country':settings.BASE_COUNTRY})
 
 
+def validate_username(request):
+    username = request.GET.get('username', None)
+    data = {
+        'is_taken': User.objects.filter(username__iexact=username).exists()
+    }
+    if data['is_taken']:
+        data['error_message'] = 'A user with this username already exists.'
+    return JsonResponse(data)

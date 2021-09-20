@@ -31,6 +31,7 @@ class NewEventForm(forms.ModelForm):
             'location_longitude', 
             'location_latitude' ,
             'group',
+            'creator',
         ]
         widgets = {
             'start_date': DateInput(attrs={
@@ -72,6 +73,9 @@ class NewEventForm(forms.ModelForm):
             }), 
             'location_latitude': forms.HiddenInput(attrs={
             'id': 'latitude',
+            }) ,
+            'creator': forms.HiddenInput(attrs={
+            'id': 'creator',
             }) ,
         }
     def clean(self):

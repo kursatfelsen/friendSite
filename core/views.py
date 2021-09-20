@@ -45,7 +45,8 @@ class NewEventView(CustomLoginRequiredMixin, View):
         return render(request,'new_event.html',{'form':self.form})
 
     def get(self, request):
-        self.form = NewEventForm
+        friend = Friend.objects.get(user__id = request.user.id)
+        self.form = NewEventForm(initial={'creator': friend.id})
         return self.render(request)
 
     def post(self, request):
@@ -168,3 +169,13 @@ class AddUserToGroupAjax(View):
                 'added': False
             }
         return JsonResponse(data)
+
+
+def plan(request,event_id):
+    event = Event.objects.get(id=event_id)
+    if event.creator.user.id == request.user.id:
+        print("AAAA")
+        event.state = 'P2'
+        event.save()
+    return redirect('detail',group_id = event.group.id)
+    

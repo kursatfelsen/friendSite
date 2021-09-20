@@ -43,6 +43,7 @@ class Event(models.Model):
         (HAPPENED, 'Happened'),
     ]
     name = models.TextField(max_length=50)
+    creator = models.ForeignKey(Friend,blank=True,on_delete=models.CASCADE)
     start_date = models.DateField(null=True)
     start_time = models.TimeField(null=True)
     end_date = models.DateField(null=True)

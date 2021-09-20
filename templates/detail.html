@@ -23,7 +23,11 @@
                     <ul class="list-group list-group-flush">
                     {% for event in events %}
                         <li class="list-group-item">
-                            <a href="{% url 'event_detail' event.id %}">{{event}}</a>
+                            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right">Status: {{event.get_state_display}}</span>
+                            {% if event.creator.id == user.id %}
+                                <a href="{% url 'plan' event.id %}"><button class="btn btn-success"> Event is on!</button></a>
+                            {% else %}
+                            {% endif %}
                             <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"></p> <button vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button>
                             <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"></p> <button vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button>
                             <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary">Edit</button></a>
@@ -46,13 +50,14 @@
                     {% endfor %}
                     </ul>
                     <div class="card-footer">
-                        <h5 id="new-user-select-h5"  {% if friends|length %}{% else %} hidden{% endif %}>Add a new friend</h5>
-                        <select name="new_user" id="new-user-select" {% if friends|length %}{% else %} hidden{% endif %}>
+                        <h5 id="new-user-select-h5"  {% if friends|length %}{% else %} style="display:none;"{% endif %}>Add a new friend</h5>
+                        <select name="new_user" id="new-user-select" {% if friends|length %}{% else %} style="display:none;"{% endif %}>
                             {% for friend in friends %}
                             <option value="{{friend.user.id}}" id="new-user-option-{{friend.user.id}}">{{friend.user.username}}</option>
                             {% endfor %}
                         </select>
-                        <button {% if friends|length %}{% else %} hidden{% endif %} onclick=addUserToGroup() class="btn btn-primary" type="submit" id="new-user-select-button">Add friend</button>
+                        <button {% if friends|length %}{% else %} style="display:none;"{% endif %} onclick=addUserToGroup() class="btn btn-primary" type="submit" id="new-user-select-button">Add friend</button>
+                        <p id ="new-user-select-p"  {% if friends|length %} style="display:none;"{% else %}{% endif %}> There are no friends that you can add.</p>
                     </div>
                 </div>
             </div>
@@ -83,6 +88,7 @@ function dismiss(u_id, g_id){
                 document.getElementById('new-user-select-h5').style.display = "";
                 document.getElementById('new-user-select-button').style.display = "";
                 document.getElementById('new-user-select').style.display = "";
+                document.getElementById('new-user-select-p').style.display = "none";
             }
         });
     }
@@ -122,6 +128,7 @@ function addUserToGroup(){
                         document.getElementById('new-user-select-h5').style.display = "none";
                         document.getElementById('new-user-select-button').style.display = "none";
                         document.getElementById('new-user-select').style.display = "none";
+                        document.getElementById('new-user-select-p').style.display = "";
                     }
                 }
                 else {

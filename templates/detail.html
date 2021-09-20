@@ -40,26 +40,19 @@
                     <div class="card-header">
                         Friends in this group
                     </div>
-                    <ul class="list-group list-group-flush">
+                    <ul class="list-group list-group-flush" id="friend-list">
                     {% for friend in group.get_friends %}
                         <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger">Dismiss</button></li>
                     {% endfor %}
                     </ul>
                     <div class="card-footer">
-                        {% if friends|length %}
-                            <h5>Add a new friend</h5>
-                            <form action="{% url 'detail' group.id %}" method="post">
-                                {% csrf_token %}
-                                <select name="new_user">
-                                {% for friend in friends %}
-                                    <option value="{{friend.user.id}}">{{friend.user.username}}</option>
-                                {% endfor %}
-                                </select>
-                                <button class="btn btn-primary" type="submit">Add friend</button>
-                            </form>
-                        {% else %}
-                            <p>Wow there are no friends that tou can add.</p>
-                        {% endif %}
+                        <h5 id="new-user-select-h5"  {% if friends|length %}{% else %} hidden{% endif %}>Add a new friend</h5>
+                        <select name="new_user" id="new-user-select" {% if friends|length %}{% else %} hidden{% endif %}>
+                            {% for friend in friends %}
+                            <option value="{{friend.user.id}}" id="new-user-option-{{friend.user.id}}">{{friend.user.username}}</option>
+                            {% endfor %}
+                        </select>
+                        <button {% if friends|length %}{% else %} hidden{% endif %} onclick=addUserToGroup() class="btn btn-primary" type="submit" id="new-user-select-button">Add friend</button>
                     </div>
                 </div>
             </div>
@@ -86,6 +79,10 @@ function dismiss(u_id, g_id){
             data: {'user_id': u_id,'group_id':g_id},
             success: function (data) {
                 document.getElementById(u_id).remove();
+                document.getElementById('new-user-select').innerHTML+= '<option value="'+u_id+'" id="new-user-option-'+u_id+'">'+ data.name +'</option>';
+                document.getElementById('new-user-select-h5').style.display = "";
+                document.getElementById('new-user-select-button').style.display = "";
+                document.getElementById('new-user-select').style.display = "";
             }
         });
     }
@@ -106,4 +103,35 @@ function vote(u_id, e_id, status){
     }
 </script>
 
+<script>
+
+function addUserToGroup(){
+        g_id = {{group.id}};
+        $.ajax({
+            url: {% url 'addUserToGroup' %},
+            type: "GET",
+            data: {'user_id': document.getElementById('new-user-select').value,'group_id':g_id},
+            success: function (data) {
+                if (data.added){
+                    u_id = document.getElementById('new-user-select').value;
+                    str = '<li class="list-group-item" id="'+u_id+'">'+data.name+'<button dismiss-user="{% url 'dismiss' %}" onclick="dismiss('+u_id+',' +g_id + ')" class="btn btn-danger">Dismiss</button></li>';
+                    
+                    document.getElementById('friend-list').innerHTML+= str;
+                    document.getElementById('new-user-option-'+u_id).remove();
+                    if (document.getElementById('new-user-select').options.length==0){
+                        document.getElementById('new-user-select-h5').style.display = "none";
+                        document.getElementById('new-user-select-button').style.display = "none";
+                        document.getElementById('new-user-select').style.display = "none";
+                    }
+                }
+                else {
+                    console.log("error");
+                }
+            }
+        });
+    }
+
+</script>
+
 {% endblock extra_script %}
+

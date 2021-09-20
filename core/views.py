@@ -37,10 +37,6 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
         messages.error(request,'You do not belong to that group')
         return redirect('home')
 
-    def post(self,request,group_id):
-        new_user = request.POST['new_user']
-        Friend.objects.get(user__id=new_user).join_group(group_id)
-        return redirect('detail',group_id=group_id)
 
 
 
@@ -117,44 +113,58 @@ class VoteView(CustomLoginRequiredMixin, View):
         return redirect('detail',group_id = group_id)
 
 
-class DismissView(CustomLoginRequiredMixin, View):
-    def get(self,request,group_id, user_id):
-        Friend.objects.get(user__id=user_id).leave_group(group_id)
-        return redirect('detail',group_id = group_id)
+class VoteAjax(View):
+    def get(self,request):
+        user_id = request.GET.get('user_id', None)
+        event_id = request.GET.get('event_id', None)
+        status = request.GET.get('status', None)
+        if status == "0":
+            status = False
+        else:
+            status = True
+        Vote.objects.filter(event_id=event_id, friend__user__id = user_id).delete()
 
+        Vote.objects.create(friend_id=Friend.objects.get(user_id = user_id).id,event_id=event_id,status = status)
 
-def vote(request):
-    user_id = request.GET.get('user_id', None)
-    event_id = request.GET.get('event_id', None)
-    status = request.GET.get('status', None)
-    if status == "0":
-        status = False
-    else:
-        status = True
-    Vote.objects.filter(event_id=event_id, friend__user__id = user_id).delete()
-
-    Vote.objects.create(friend_id=Friend.objects.get(user_id = user_id).id,event_id=event_id,status = status)
-
-    event = Event.objects.get(id=event_id)
-    data = {
-        'yeas': event.getYeas(),
-        'nas': event.getNas(),
-    }
-    return JsonResponse(data)
-
-def dismiss(request):
-    
-    user_id = request.GET.get('user_id', None)
-    group_id = request.GET.get('group_id', None)
-    print(user_id)
-    print(group_id)
-    try:
-        Friend.objects.get(user__id=user_id).leave_group(group_id)
+        event = Event.objects.get(id=event_id)
         data = {
-            'dismissed': True
+            'yeas': event.getYeas(),
+            'nas': event.getNas(),
         }
-    except:
-        data = {
-            'dismissed': False
-        }
-    return JsonResponse(data)
+        return JsonResponse(data)
+
+
+class DismissAjax(View):
+    def get(self,request):
+        user_id = request.GET.get('user_id', None)
+        group_id = request.GET.get('group_id', None)
+        friend = Friend.objects.get(user__id=user_id)
+        try:
+            friend.leave_group(group_id)
+            data = {
+                'dismissed': True,
+                'name': friend.user.username,
+            }
+        except:
+            data = {
+                'dismissed': False
+            }
+        return JsonResponse(data)
+
+
+class AddUserToGroupAjax(View):
+    def get(self,request):
+        user_id = request.GET.get('user_id', None)
+        group_id = request.GET.get('group_id', None)
+        friend = Friend.objects.get(user__id=user_id)
+        try:
+            friend.join_group(group_id)
+            data = {
+                'added': True,
+                'name': friend.user.username,
+            }
+        except:
+            data = {
+                'added': False
+            }
+        return JsonResponse(data)

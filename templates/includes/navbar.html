@@ -7,12 +7,19 @@
           <p class="text-muted">This is the friends website. You can communicate with your friends and even make new friends here!</p>
         </div>
         <div class="col-sm-4 offset-md-1 py-4">
-          <h4 class="text-white">Contact</h4>
-          <ul class="list-unstyled">
-            <li><a href="#" class="text-white">Follow on Twitter</a></li>
-            <li><a href="#" class="text-white">Like on Facebook</a></li>
-            <li><a href="#" class="text-white">Email me</a></li>
-          </ul>
+            {% if user.is_authenticated %}
+              <h4 class="text-white">Account</h4>
+              <ul class="list-unstyled">
+                <li><a href="{% url 'profile' user.username %}" class="text-white">Profile</a></li>
+                <li><a href="{% url 'logout' %}" class="text-white">Logout</a></li>
+              </ul>
+            {% else %}
+              <h4 class="text-white">Account</h4>
+              <ul class="list-unstyled">
+                <li><a href="{% url 'logout' %}" class="text-white">Login</a></li>
+                <li><a href="{% url 'signup' %}" class="text-white">Register</a></li>
+              </ul>
+            {% endif %}
         </div>
       </div>
     </div>
@@ -24,7 +31,7 @@
         <strong>Friends</strong>
       </a>
       <a class="text-white" href="{% if user.is_authenticated %}{% url 'profile' request.user.username %}{% else %}{% url 'login' %}{% endif %}">
-        {% if user.is_authenticated %}Welcome {{user.username}}{% else %}Login{% endif %}
+        {% if user.is_authenticated %}Welcome {{user.username}}{% else %}Welcome, please login.{% endif %}
       </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>

@@ -14,7 +14,7 @@
 <body>
     {% include "includes/navbar.html" %}
     <br>
-    <div class="container">
+    <div class="container ">
       {% if messages %}
         {% for message in messages %}
           <div class="alert alert-{% if message.tags %}{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}" role="alert">{{ message }}</div>

@@ -77,6 +77,7 @@ class Event(models.Model):
     def getNas(self):
         return Vote.objects.filter(event__id = self.id, status=False).count()
 
+
 class Vote(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     friend = models.ForeignKey(Friend,on_delete=models.CASCADE)

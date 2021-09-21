@@ -1,17 +1,37 @@
 {% extends "base.html" %}
 {% block body %}
+<h1 class="text-center">Event Details</h1>
 
-<h1>EVENT DETAIL VIEW</h1>
-<p>{{event.name}}</p>
-<p>{{event.date}}</p>
-<p>{{event.state}}</p>
-<p>{{event.location_address}}</p>
-<p>{{event.start_date}}</p>
-<p>{{event.start_time}}</p>
-<p>{{event.end_date}}</p>
-<p>{{event.end_time}}</p>
-<div class="card" style="width: 50rem;">
-  <img class="card-img-top" src="{% if event.location_photo_url %}{{event.location_photo_url}}{% else %}https://pegasuseventsindia.files.wordpress.com/2014/04/eventmanagement-1.jpg?w=1400&h=400&crop=1{% endif %}" alt="Card image cap" >
+<div class="row d-flex align-items-stretch">
+    <div class="card border-primary mx-auto " style="width: 30rem;">
+      <div class="card-header">
+        {{event.name}}
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Starting Time</b><span class="float-right">{{event.start_date}} - {{event.start_time}}</span></li>
+        <li class="list-group-item"><b>Ending Time</b><span class="float-right">{{event.end_date}} - {{event.end_time}}</span></li>
+        <li class="list-group-item"><b>State</b><span class="float-right">{{event.get_state_display}}</span></li>
+        <li class="list-group-item"><b>Creator</b><span class="float-right">{{event.creator.user.username}}</span></li>
+      </ul>
+    </div>
+  {% if event.state != "P1" %}
+    <div class="card border-primary mx-auto " style="width: 30rem;">
+      <div class="card-header">
+        Attenders
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for attender in event.attender.all %}
+        <li class="list-group-item">{{attender.user.username}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+  {% endif %}
+
+</div>
+<br>
+<h2 class="text-center">Location details</h2>
+<div class="card mx-auto" style="width: 66rem;">
   <div class="row">
     <div class="col">
         <div class="card-body">
@@ -29,8 +49,9 @@
     <div id="map" style="height: 400px; width: 100%;"></div>
     </div>
   </div>
-</div>
+  <img class="card-img-top" style="width: 66rem" src="{% if event.location_photo_url %}{{event.location_photo_url}}{% else %}https://pegasuseventsindia.files.wordpress.com/2014/04/eventmanagement-1.jpg?w=1400&h=400&crop=1{% endif %}" alt="Card image cap" >
 
+</div>
 {% endblock body %}
 
 

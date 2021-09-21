@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core import serializers
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
@@ -182,8 +183,12 @@ class PlanAjax(View):
                 event.attender.add(i.friend)
             event.save()
             #TODO send email or notification to accepted friends
+            friend_list = []
+
             data = {
                 'planned': True,
+                'event_name': event.name,
+                'attenders': list(event.attender.all().values_list('user__username')),
             }
             return JsonResponse(data)
         data = {

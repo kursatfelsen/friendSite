@@ -26,31 +26,32 @@
                         <li class="list-group-item">
                             <div id="list-group-item-{{event.id}}">
                                 <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
-                                {% if event.creator.id == user.id and event.state == "P1" %}
-                                    <button onclick=plan({{event.id}}) id="event-is-on-{{event.id}}" class="btn btn-success"> Event is on!</button>
-                                {% else %}
-                                {% endif %}
-                                <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"></p> <button class="btn btn-success float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button>
-                                <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"></p> <button class="btn btn-danger float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button>
+                                <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"><button class="btn btn-success float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button></p>
+                                <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"><button class="btn btn-secondary float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button></p>
                             </div>
-                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary">Edit</button></a>
-                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
+                            {% if event.creator.id == user.id and event.state == "P1" %}
+                                <button onclick=plan({{event.id}}) id="event-is-on-{{event.id}}" class="btn btn-warning"> Event is on!</button>
+                            {% endif %}
+                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right">Edit</button></a>
+                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1"">Delete</button></a>
                         </li>               
                         {% else %}
                         <li class="list-group-item">
-                            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
-                            <h5>Attenders:</h5>
-                            <div class="card">
-                            <ul class="list-group">
-                            {% for attender in event.attender.all %}
-                                <li class="list-group-item">{{attender.user}}</li>
-                            {% endfor %}
-                            </ul>
+                            <div id="list-group-item-{{event.id}}">
+                                <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
+                                <h6>Attenders:</h6>
+                                <div class="card">
+                                    <ul class="list-group">
+                                    {% for attender in event.attender.all %}
+                                        <li class="list-group-item">{{attender.user}}</li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                                <br>
                             </div>
-                            <br>
-                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary">Edit</button></a>
-                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
-                        </li>   
+                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right ">Edit</button></a>
+                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1">Delete</button></a>
+                        </li>
                         {% endif %}
 
                     {% endfor %}
@@ -83,7 +84,7 @@
         </div>
         <br>
         <form method="get" action="{% url 'new_event' %}">
-            <button class="btn btn-danger" type="submit" >Create an event!</button>
+            <button class="btn btn-danger float-right" type="submit" >Create an event!</button>
         </form>
     </div>
     <br>
@@ -112,6 +113,7 @@ function dismiss(u_id, g_id){
     }
 
 </script>
+
 <script>
 
 function vote(u_id, e_id, status){
@@ -168,11 +170,15 @@ function plan(e_id){
             success: function (data) {
                 document.getElementById('event-is-on-'+e_id).remove();
                 if (data.planned){
-                    document.getElementById('status-'+e_id).innerHTML = 'Status: '+ 'Planned';
+                    str = '<div id="list-group-item-'+e_id+'"><a href="/event/detail/'+e_id+'">'+data.event_name+'</a><span class="float-right" id="status-'+e_id+'">Status:Planned</span><h5>Attenders:</h5><div class="card"><ul class="list-group">';
+                    for (var i=0;i<data.attenders.length;i++){
+                        str += '<li class="list-group-item">'+ data.attenders[i] +'</li>';
+                    }
+                    str += '</ul></div><br></div>';
+                    document.getElementById('list-group-item-'+e_id).outerHTML = str;
                 }
             }
         });
-        
     }
 </script>
 

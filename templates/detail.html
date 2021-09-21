@@ -22,18 +22,37 @@
                     </div>
                     <ul class="list-group list-group-flush">
                     {% for event in events %}
+                        {% if event.state == "P1" %}
                         <li class="list-group-item">
-                            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right">Status: {{event.get_state_display}}</span>
-                            {% if event.creator.id == user.id %}
-                                <a href="{% url 'plan' event.id %}"><button class="btn btn-success"> Event is on!</button></a>
-                            {% else %}
-                            {% endif %}
-                            <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"></p> <button vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button>
-                            <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"></p> <button vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button>
+                            <div id="list-group-item-{{event.id}}">
+                                <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
+                                {% if event.creator.id == user.id and event.state == "P1" %}
+                                    <button onclick=plan({{event.id}}) id="event-is-on-{{event.id}}" class="btn btn-success"> Event is on!</button>
+                                {% else %}
+                                {% endif %}
+                                <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"></p> <button class="btn btn-success float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button>
+                                <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"></p> <button class="btn btn-danger float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button>
+                            </div>
                             <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary">Edit</button></a>
                             <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
+                        </li>               
+                        {% else %}
+                        <li class="list-group-item">
+                            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
+                            <h5>Attenders:</h5>
+                            <div class="card">
+                            <ul class="list-group">
+                            {% for attender in event.attender.all %}
+                                <li class="list-group-item">{{attender.user}}</li>
+                            {% endfor %}
+                            </ul>
+                            </div>
+                            <br>
+                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary">Edit</button></a>
+                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger">Delete</button></a>
+                        </li>   
+                        {% endif %}
 
-                        </li>
                     {% endfor %}
                     </ul>
                 </div>
@@ -46,7 +65,7 @@
                     </div>
                     <ul class="list-group list-group-flush" id="friend-list">
                     {% for friend in group.get_friends %}
-                        <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger">Dismiss</button></li>
+                        <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger float-right">Dismiss</button></li>
                     {% endfor %}
                     </ul>
                     <div class="card-footer">
@@ -67,7 +86,6 @@
             <button class="btn btn-danger" type="submit" >Create an event!</button>
         </form>
     </div>
-    <button class="btn btn-danger" id="test" type="submit" onclick=fade_out()>Create an event!</button>
     <br>
 
 {% endblock body %}
@@ -120,7 +138,7 @@ function addUserToGroup(){
             success: function (data) {
                 if (data.added){
                     u_id = document.getElementById('new-user-select').value;
-                    str = '<li class="list-group-item" id="'+u_id+'">'+data.name+'<button dismiss-user="{% url 'dismiss' %}" onclick="dismiss('+u_id+',' +g_id + ')" class="btn btn-danger">Dismiss</button></li>';
+                    str = '<li class="list-group-item" id="'+u_id+'">'+data.name+'<button dismiss-user="{% url 'dismiss' %}" onclick="dismiss('+u_id+',' +g_id + ')" class="btn btn-danger float-right">Dismiss</button></li>';
                     
                     document.getElementById('friend-list').innerHTML+= str;
                     document.getElementById('new-user-option-'+u_id).remove();
@@ -138,6 +156,24 @@ function addUserToGroup(){
         });
     }
 
+</script>
+
+<script>
+
+function plan(e_id){
+        $.ajax({
+            url: {% url 'plan' %},
+            type: "GET",
+            data: {'event_id':e_id},
+            success: function (data) {
+                document.getElementById('event-is-on-'+e_id).remove();
+                if (data.planned){
+                    document.getElementById('status-'+e_id).innerHTML = 'Status: '+ 'Planned';
+                }
+            }
+        });
+        
+    }
 </script>
 
 {% endblock extra_script %}

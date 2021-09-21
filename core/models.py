@@ -44,6 +44,7 @@ class Event(models.Model):
     ]
     name = models.TextField(max_length=50)
     creator = models.ForeignKey(Friend,blank=True,on_delete=models.CASCADE)
+    attender = models.ManyToManyField(Friend,blank=True,related_name='attending_set')
     start_date = models.DateField(null=True)
     start_time = models.TimeField(null=True)
     end_date = models.DateField(null=True)

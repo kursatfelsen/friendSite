@@ -171,11 +171,23 @@ class AddUserToGroupAjax(View):
         return JsonResponse(data)
 
 
-def plan(request,event_id):
-    event = Event.objects.get(id=event_id)
-    if event.creator.user.id == request.user.id:
-        print("AAAA")
-        event.state = 'P2'
-        event.save()
-    return redirect('detail',group_id = event.group.id)
+class PlanAjax(View):
+    def get(self,request):
+        event_id = request.GET.get('event_id', None)
+        event = Event.objects.get(id=event_id)
+        if event.creator.user.id == request.user.id:
+            event.state = 'P2'
+            votes = Vote.objects.filter(event__id = event_id, status=True)
+            for i in votes:
+                event.attender.add(i.friend)
+            event.save()
+            #TODO send email or notification to accepted friends
+            data = {
+                'planned': True,
+            }
+            return JsonResponse(data)
+        data = {
+            'planned':False
+        }
+        return JsonResponse(data)
     

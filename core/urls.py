@@ -14,4 +14,5 @@ urlpatterns = [
     path('vote/',VoteAjax.as_view(),name='vote'),
     path('add/',AddUserToGroupAjax.as_view(),name='addUserToGroup'),
     path('plan/',PlanAjax.as_view(),name='plan'),
+    path('paginate/',paginate,name='paginate'),
 ]

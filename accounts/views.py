@@ -1,5 +1,5 @@
 from accounts.forms import UserProfileForm
-from core.models import Friend
+from core.models import Event, Friend, FriendGroup
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -10,6 +10,7 @@ from django.views import View
 from django.conf import settings
 from django.http import JsonResponse
 # Create your views here.
+
 
 class SignupView(View):
     def render(self,request):
@@ -79,9 +80,9 @@ class LogoutView(CustomLoginRequiredMixin,View):
 
 
 
-class ProfileView(CustomLoginRequiredMixin,View):
+class SettingsView(CustomLoginRequiredMixin,View):
     def render(self,request):
-        return render(request,'profile.html',{'user':self.user,'friend':self.friend,'form':self.form,'groups':self.friendgroups})
+        return render(request,'settings.html',{'user':self.user,'friend':self.friend,'form':self.form,'groups':self.friendgroups})
 
     def get(self, request, username):
         self.user = User.objects.get(username=username)
@@ -93,6 +94,19 @@ class ProfileView(CustomLoginRequiredMixin,View):
         messages.error(request, "You have no access to that area.")
         return redirect('home')
 
+
+class ProfileView(CustomLoginRequiredMixin,View):
+    #Change here
+    def render(self,request):
+        return render(request,'profile.html',{'user':self.user,'friend':self.friend,'groups':self.friendgroups,'events_as_creator':self.events_as_creator,'events_as_attender':self.events_as_attender})
+
+    def get(self, request, username):
+        self.user = User.objects.get(username=username)
+        self.friend = Friend.objects.get(user=self.user)
+        self.friendgroups = self.friend.friendGroup.all()
+        self.events_as_creator = Event.objects.filter(creator=self.friend)
+        self.events_as_attender = Event.objects.filter(attender=self.friend)
+        return self.render(request) 
 
 
 class CalendarView(CustomLoginRequiredMixin, View):
@@ -106,20 +120,12 @@ class CalendarView(CustomLoginRequiredMixin, View):
         return redirect('home')
 
 
-def testview(request):
-    if request.method == 'POST':
-        print(request.POST.get('street_number'))
-        print(request.POST.get('county'))
-        print(request.POST.get('postal_code'))
-        print(request.POST.get('longitude'))
-    return render(request,'test.html',{'google_api_key':settings.GOOGLE_API_KEY,'base_country':settings.BASE_COUNTRY})
-
-
-def validate_username(request):
-    username = request.GET.get('username', None)
-    data = {
-        'is_taken': User.objects.filter(username__iexact=username).exists()
-    }
-    if data['is_taken']:
-        data['error_message'] = 'A user with this username already exists.'
-    return JsonResponse(data)
+class ValidateUserNameAjax(View):
+    def get(self,request):
+        username = request.GET.get('username', None)
+        data = {
+            'is_taken': User.objects.filter(username__iexact=username).exists()
+        }
+        if data['is_taken']:
+            data['error_message'] = 'A user with this username already exists.'
+        return JsonResponse(data)

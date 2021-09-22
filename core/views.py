@@ -1,10 +1,12 @@
 from django.contrib.auth.models import User
 from django.contrib import messages
+
 from django.core import serializers
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
-from django.db.models import Q
 
 from .models import Vote
 from accounts.views import CustomLoginRequiredMixin
@@ -27,18 +29,31 @@ class HomePageView(View):
 
 class GroupDetailView(CustomLoginRequiredMixin, View):
     def render(self, request):
-        friends_that_are_not_in_group = Friend.objects.filter(~Q(friendGroup__in=[self.group]))
-        return render(request,'detail.html',{'group':self.group,'events':self.events,'friends':friends_that_are_not_in_group})
+        friends_that_are_not_in_group = Friend.objects.exclude(friendGroup=self.group)
+        return render(request,'detail.html',{'group':self.group,'events':self.events,'friends':friends_that_are_not_in_group,'page_list':self.page_list, 'first_page':self.first_page})
 
     def get(self, request, group_id):
+        friend_objects= Friend.objects.filter()
+
+        paginator = Paginator(friend_objects, 4)
+        page = request.GET.get('page', 4)
+
+        try:
+            friends = paginator.page(page)
+        except PageNotAnInteger:
+            friends = paginator.page(1)
+        except EmptyPage:
+            friends = paginator.page(paginator.num_pages)
+
+        self.page_list = friends.paginator.page_range
+        self.first_page = paginator.page(1).object_list
+
         self.group = FriendGroup.objects.get(id = group_id)
         if Friend.objects.get(user__id=request.user.id) in self.group.get_friends():
             self.events = Event.objects.filter(group__id=group_id)
             return self.render(request)
         messages.error(request,'You do not belong to that group')
         return redirect('home')
-
-
 
 
 class NewEventView(CustomLoginRequiredMixin, View):
@@ -122,8 +137,12 @@ class VoteAjax(View):
         status = request.GET.get('status', None)
         if status == "0":
             status = False
-        else:
+        elif status=="1":
             status = True
+        else:
+            Vote.objects.filter(event_id=event_id, friend__user__id = user_id).delete()
+            data = {'result':True}
+            return JsonResponse(data)
         Vote.objects.filter(event_id=event_id, friend__user__id = user_id).delete()
 
         Vote.objects.create(friend_id=Friend.objects.get(user_id = user_id).id,event_id=event_id,status = status)
@@ -196,3 +215,12 @@ class PlanAjax(View):
         }
         return JsonResponse(data)
     
+
+def paginate(request):
+    page= int(request.GET.get('page', None))
+    group = request.GET.get('group', None)
+    starting_number= (page-1)*4
+    ending_number= page*4
+    result= list(Friend.objects.filter(friendGroup__id = group)[starting_number:ending_number].values_list('user__username'))
+    data={'result':result}
+    return JsonResponse(data)

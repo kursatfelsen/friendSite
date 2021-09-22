@@ -1,5 +1,9 @@
 {% extends "base.html" %}
-
+{% load static %}
+{% block extra_head %}
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="{% static 'css/group_profiles.css' %}">
+{% endblock extra_head %}
 
 {% block body %}
     <section class="jumbotron text-center">
@@ -14,7 +18,47 @@
     </section>
     <div class="container">
         <div class="row">
-            
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-sm-8 col-lg-6">
+                    <!-- Section Heading-->
+                    <div class="section_heading text-center wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
+                        <h3>Friends in the group</h3>
+                        <div class="line"></div>
+                    </div>
+                    </div>
+                </div>
+                <div class="row" id="friend-list">
+                    {% for friend in first_page %}
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="single_advisor_profile wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
+                                <!-- Team Thumb-->
+                                <div class="advisor_thumb"><img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                                <!-- Social Info-->
+                                <div class="social-info"><a href="#"><i class="fa fa-facebook"></i></a><a href="#"><i class="fa fa-twitter"></i></a><a href="#"><i class="fa fa-linkedin"></i></a></div>
+                                </div>
+                                <!-- Team Details-->
+                                <div class="single_advisor_details_info">
+                                <h6>{{friend.user.username}}</h6>
+                                <p class="designation">{{friend.description}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Single Advisor-->
+                </div>
+                <nav aria-label="..." >
+                    <ul class="pagination pagination-sm justify-content-center">
+                        {% for i in page_list %}
+                        <li class="page-item" id="pagination-li-{{i}}"><a class="page-link" onclick=ajax_function({{i}}) >{{i}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+        <div class="row">
             <div class="col-md">
                 <div class="card" style="width: 30rem;">
                     <div class="card-header">
@@ -60,11 +104,11 @@
             </div>
 
             <div class="col-md">
-                <div class="card" style="width: 30rem;">
+                <div class="card float-right" style="width: 30rem;">
                     <div class="card-header">
                         Friends in this group
                     </div>
-                    <ul class="list-group list-group-flush" id="friend-list">
+                    <ul class="list-group list-group-flush" id="friend-list-add">
                     {% for friend in group.get_friends %}
                         <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger float-right">Dismiss</button></li>
                     {% endfor %}
@@ -84,11 +128,8 @@
         </div>
         <br>
         <form method="get" action="{% url 'new_event' %}">
-            <button class="btn btn-danger float-right" type="submit" >Create an event!</button>
+            <button class="btn btn-danger" type="submit" >Create an event!</button>
         </form>
-    </div>
-    <br>
-
 {% endblock body %}
 
 {% block extra_script %}
@@ -142,7 +183,7 @@ function addUserToGroup(){
                     u_id = document.getElementById('new-user-select').value;
                     str = '<li class="list-group-item" id="'+u_id+'">'+data.name+'<button dismiss-user="{% url 'dismiss' %}" onclick="dismiss('+u_id+',' +g_id + ')" class="btn btn-danger float-right">Dismiss</button></li>';
                     
-                    document.getElementById('friend-list').innerHTML+= str;
+                    document.getElementById('friend-list-add').innerHTML+= str;
                     document.getElementById('new-user-option-'+u_id).remove();
                     if (document.getElementById('new-user-select').options.length==0){
                         document.getElementById('new-user-select-h5').style.display = "none";
@@ -181,6 +222,30 @@ function plan(e_id){
         });
     }
 </script>
+
+<script>
+function ajax_function(page) {
+    $.ajax({
+        url: "{% url 'paginate' %}",
+        type: "get",
+        data: {
+            'page': page,
+            'group': {{group.id}},
+        },
+        dataType: 'json',
+        success: function (data) {
+            document.getElementById('friend-list').innerHTML = "";
+            var str = "";
+            for (i = 0; i < data.result.length; i++) {
+              str += '<div class="col-12 col-sm-6 col-lg-3"><div class="single_advisor_profile wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;"><!-- Team Thumb--><div class="advisor_thumb"><img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt=""><div class="social-info"><a href="#"><i class="fa fa-facebook"></i></a><a href="#"><i class="fa fa-twitter"></i></a><a href="#"><i class="fa fa-linkedin"></i></a></div></div><div class="single_advisor_details_info"><h6>'
+              str += data.result[i]+'</h6><p class="designation"></p></div></div></div>';
+            }
+            document.getElementById('friend-list').innerHTML = str;
+        }
+    });
+}
+</script>
+
 
 {% endblock extra_script %}
 

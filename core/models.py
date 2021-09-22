@@ -8,6 +8,7 @@ class FriendGroup(models.Model):
     name = models.CharField(max_length=50)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     img_url = models.TextField(blank=True)
+    is_private = models.BooleanField(blank=True,default=False)
 
     def __str__(self):
         return self.name

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block body %}
+<form action="{% url 'new_group' %}" method="POST">
+{% csrf_token %}
+{{form.as_p}}
+<button class="btn btn-success"> Create a new group!</button>
+</form>
+
+{% endblock body %}
+
+
+{% block extra_script %}
+
+{% endblock %}

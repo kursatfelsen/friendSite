@@ -41,10 +41,10 @@ INSTALLED_APPS = [
     
     'widget_tweaks',
     'googlemaps',
-
+    'phonenumber_field',
+    
     'accounts',
     'core',
-    'polls',
 ]
 
 MIDDLEWARE = [
@@ -144,11 +144,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 GOOGLE_API_KEY = 'AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k'
-
+"""
+Future purposes
 RECAPTCHA_KEY = '6LeM4mYcAAAAACZ8EHUW11Eq9B8JhWACV9Sp-8u9'
 
 RECAPTCHA_SECRET_KEY = '6LeM4mYcAAAAAJEg7vzNL5NHEBETslM2_lAT1hqL'
-
+"""
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -14,11 +14,11 @@
               <div class="card">
                 <div class="card-body">
                   <div class="d-flex flex-column align-items-center text-center">
-                    <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin" class="rounded-circle" width="150">
+                    <img src="{{friend.img}}" alt="Admin" class="rounded-circle" width="150">
                     <div class="mt-3">
                       <h4>{{user.username}}</h4>
-                      <p class="text-secondary mb-1">Full Stack Developer</p>
-                      <p class="text-muted font-size-sm">Bay Area, San Francisco, CA</p>
+                      <p class="text-secondary mb-1">{{friend.description}}</p>
+                      <p class="text-muted font-size-sm">{{friend.address}}</p>
                       <button class="btn btn-primary">Follow</button>
                       <button class="btn btn-outline-primary">Message</button>
                     </div>
@@ -26,15 +26,16 @@
                 </div>
               </div>
               <div class="card mt-3">
+                <div class="card-header">Friend Groups</div>
                 <div class="accordion" id="accordionExample">
                 {% for group in groups %}
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="heading{{forloop.counter}}">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{forloop.counter}}" aria-expanded="true" aria-controls="collapse{{forloop.counter}}">
-                            {{group.name}} 
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{forloop.counter}}" aria-expanded="false" aria-controls="collapse{{forloop.counter}}">
+                            {{group.name}}{% if group.is_private %} <span class="text-muted ml-2">Private</span>{% endif %}
                         </button>
                         </h2>
-                        <div id="collapse{{forloop.counter}}" class="accordion-collapse collapse show" aria-labelledby="heading{{forloop.counter}}" data-bs-parent="#accordionExample">
+                        <div id="collapse{{forloop.counter}}" class="accordion-collapse collapse" aria-labelledby="heading{{forloop.counter}}" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
                             <ul class="list-group list-group-flush">
                             {% for friend in group.friend_set.all %}
@@ -59,7 +60,7 @@
                       <h6 class="mb-0">Full Name</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                      Kenneth Valdez
+                      {{friend.fullname}}
                     </div>
                   </div>
                   <hr>
@@ -68,7 +69,7 @@
                       <h6 class="mb-0">Email</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                      {{user.username}}
+                      {{user.email}}
                     </div>
                   </div>
                   <hr>
@@ -77,16 +78,7 @@
                       <h6 class="mb-0">Phone</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                      (239) 816-9029
-                    </div>
-                  </div>
-                  <hr>
-                  <div class="row">
-                    <div class="col-sm-3">
-                      <h6 class="mb-0">Mobile</h6>
-                    </div>
-                    <div class="col-sm-9 text-secondary">
-                      (320) 380-4539
+                      {{friend.phone}}
                     </div>
                   </div>
                   <hr>
@@ -95,15 +87,18 @@
                       <h6 class="mb-0">Address</h6>
                     </div>
                     <div class="col-sm-9 text-secondary">
-                      Bay Area, San Francisco, CA
+                      {{friend.address}}
                     </div>
                   </div>
                   <hr>
-                  <div class="row">
-                    <div class="col-sm-12">
-                      <a class="btn btn-info " target="__blank" href="https://www.bootdey.com/snippets/view/profile-edit-data-and-skills">Edit</a>
-                    </div>
-                  </div>
+                  {% if request.user == user %}
+                    <div class="row">
+                        <div class="col-sm-12">
+                        <a class="btn btn-info " target="__blank" href="https://www.bootdey.com/snippets/view/profile-edit-data-and-skills">Edit</a>
+                        </div>
+                    </div>    
+                  {% else %}
+                  {% endif %}
                 </div>
               </div>
 
@@ -123,7 +118,11 @@
                             {% for event in events_as_creator %}
                                 <tr class="table-{% if event.state == 'P1' %}warning{% else %}success{% endif %}">
                                     <td><a href="{% url 'event_detail' event.id %}">{{event}}</a></td>
-                                    <td><a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right">Delete</button></a></td>
+                                    {% if request.user == user  %}
+                                        <td><a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right">Delete</button></a></td>
+                                    {% else %}
+                                        <td></td>
+                                    {% endif %}
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -146,7 +145,7 @@
                             {% for event in events_as_creator %}
                                 <tr class="table-{% if event.state == 'P1' %}warning{% else %}success{% endif %}" id="table-tr-{{event.id}}">
                                     <td><a href="{% url 'event_detail' event.id %}">{{event}}</a></td>
-                                    {% if event.state == 'P1' %}
+                                    {% if event.state == 'P1' and request.user == user %}
                                         <td><button onclick=vote({{user.id}},{{event.id}},2) class="btn btn-danger float-right">Cancel Vote</button></td>
                                     {% else %}
                                         <td></td>

@@ -31,9 +31,10 @@
                 <div class="row" id="friend-list">
                     {% for friend in first_page %}
                         <div class="col-12 col-sm-6 col-lg-3">
+                            <a href="{% url 'profile' friend.user.username %}">
                             <div class="single_advisor_profile wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
                                 <!-- Team Thumb-->
-                                <div class="advisor_thumb"><img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                                <div class="advisor_thumb"><img src="{{friend.img}}" alt="">
                                 <!-- Social Info-->
                                 <div class="social-info"><a href="#"><i class="fa fa-facebook"></i></a><a href="#"><i class="fa fa-twitter"></i></a><a href="#"><i class="fa fa-linkedin"></i></a></div>
                                 </div>
@@ -43,6 +44,7 @@
                                 <p class="designation">{{friend.description}}</p>
                                 </div>
                             </div>
+                            </a>
                         </div>
                     {% endfor %}
                     
@@ -127,7 +129,7 @@
             </div>
         </div>
         <br>
-        <form method="get" action="{% url 'new_event' %}">
+        <form method="get" action="{% url 'new_event_get' group.id %}">
             <button class="btn btn-danger" type="submit" >Create an event!</button>
         </form>
 {% endblock body %}

@@ -41,6 +41,8 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
             'friends': friends_that_are_not_in_group,
             'page_list': self.page_list,
             'first_page': self.first_page,
+            'first_page_event': self.first_page_event,
+            'page_list_event': self.page_list_event,
         }
         return render(request, 'detail.html', context)
 
@@ -50,7 +52,6 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
         except FriendGroup.DoesNotExist:
             messages.error(request, 'No group with that id.')
             return redirect('home')
-
         friend_objects = Friend.objects.filter(friendGroup__id=group_id)
         paginate_by = 4
         paginator = Paginator(friend_objects, paginate_by)
@@ -64,6 +65,18 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
         self.page_list = friends.paginator.page_range
         self.first_page = paginator.page(1).object_list
 
+        event_objects = Event.objects.filter(group=group_id)
+        paginate_by_event = 3
+        paginator_event = Paginator(event_objects, paginate_by_event)
+        page_event = request.GET.get('page', paginate_by_event)
+        try:
+            events = paginator_event.page(page_event)
+        except PageNotAnInteger:
+            events = paginator_event.page(1)
+        except EmptyPage:
+            events = paginator_event.page(paginator_event.num_pages)
+        self.page_list_event = paginator_event.page_range
+        self.first_page_event = paginator_event.page(1).object_list
         if (request.user.friend.get() in self.group.get_friends()) or (request.user.friend.get() == self.group.creator):
             self.events = Event.objects.filter(group__id=group_id)
             return self.render(request)
@@ -187,7 +200,7 @@ class EventEditView(CustomLoginRequiredMixin, View):
         return self.render(request)
 
 
-#event/delete/event_id
+# event/delete/event_id
 class EventDeleteView(CustomLoginRequiredMixin, View):
     """Event delete view."""
 
@@ -205,7 +218,7 @@ class EventDeleteView(CustomLoginRequiredMixin, View):
         return redirect('detail', group_id=group_id)
 
 
-#vote/
+# vote/
 class VoteAjax(CustomLoginRequiredMixin, View):
     """For Ajax response - Handles voting system for events."""
 
@@ -218,14 +231,20 @@ class VoteAjax(CustomLoginRequiredMixin, View):
             status = False
         elif status == "1":
             status = True
-        else: # Vote cancellation status is 2.
+        else:  # Vote cancellation status is 2.
             Vote.objects.filter(event_id=event_id,
                                 friend__user__id=user_id).delete()
             data = {'result': True}
             return JsonResponse(data)
+        try:
+            # For getting the true vote.
+            vote = Vote.objects.get(
+                Q(friend__user__id=user_id) & Q(event_id=event_id))
+            vote.status = status
+        except Vote.DoesNotExist:
+            vote = Vote.objects.create(event=Event.objects.get(
+                id=event_id), friend=request.user.friend.get(), status=status)
 
-        vote = Vote.objects.get(Q(friend__user__id = user_id) & Q(event_id = event_id)) #For getting the true vote.
-        vote.status = status
         vote.save()
         event = Event.objects.get(id=event_id)
         data = {
@@ -235,7 +254,7 @@ class VoteAjax(CustomLoginRequiredMixin, View):
         return JsonResponse(data)
 
 
-#dismiss/
+# dismiss/
 class DismissAjax(CustomLoginRequiredMixin, View):
     """For Ajax response - Handles dismissing friends for groups."""
 
@@ -256,7 +275,7 @@ class DismissAjax(CustomLoginRequiredMixin, View):
         return JsonResponse(data)
 
 
-#add/
+# add/
 class AddUserToGroupAjax(CustomLoginRequiredMixin, View):
     """For Ajax response - Handles adding friends for groups."""
 
@@ -277,7 +296,7 @@ class AddUserToGroupAjax(CustomLoginRequiredMixin, View):
         return JsonResponse(data)
 
 
-#plan/
+# plan/
 class PlanAjax(CustomLoginRequiredMixin, View):
     """For Ajax response - Handles changing event's state from P1(proposed) to P2(Planned).Adds yeah voted users as attenders."""
 
@@ -303,7 +322,7 @@ class PlanAjax(CustomLoginRequiredMixin, View):
         return JsonResponse(data)
 
 
-#paginate/
+# paginate/
 class UserPaginateAjax(View):
     """For Ajax response - Handles user pagination"""
 
@@ -313,6 +332,20 @@ class UserPaginateAjax(View):
         starting_number = (page-1)*4
         ending_number = page*4
         result = list(Friend.objects.filter(friendGroup__id=group)[
-                    starting_number:ending_number].values_list('user__username'))
+            starting_number:ending_number].values_list('user__username'))
         data = {'result': result}
         return JsonResponse(data)
+
+
+# eventpaginate/
+class EventPaginateAjax(View):
+    """For Ajax response - Handles event pagination"""
+
+    def get(self, request):
+        page = int(request.GET.get('page', None))
+        group = request.GET.get('group', None)
+        starting_number = (page-1)*3
+        ending_number = page*3
+        result = list(Event.objects.filter(group__id=group)[
+            starting_number:ending_number])
+        return render(request, 'ajax_render/event_pagination.html', {'events': result})

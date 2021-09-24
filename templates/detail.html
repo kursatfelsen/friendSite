@@ -34,14 +34,18 @@
                             <a href="{% url 'profile' friend.user.username %}">
                             <div class="single_advisor_profile wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
                                 <!-- Team Thumb-->
-                                <div class="advisor_thumb"><img src="{{friend.img}}" alt="">
+                                <div class="advisor_thumb"><img src="{{friend.img}}"  alt="">
                                 <!-- Social Info-->
                                 <div class="social-info"><a href="#"><i class="fa fa-facebook"></i></a><a href="#"><i class="fa fa-twitter"></i></a><a href="#"><i class="fa fa-linkedin"></i></a></div>
                                 </div>
                                 <!-- Team Details-->
                                 <div class="single_advisor_details_info">
                                 <h6>{{friend.user.username}}</h6>
-                                <p class="designation">{{friend.description}}</p>
+                                {% if friend.description %}
+                                    <p class="designation">{{friend.description}}</p>
+                                {% else %}
+                                    <br>
+                                {% endif %}
                                 </div>
                             </div>
                             </a>
@@ -62,14 +66,14 @@
     </div>
         <div class="row">
             <div class="col-md">
-                <div class="card" style="width: 30rem;">
+                <div class="card border-primary mb-3" style="width: 36rem;">
                     <div class="card-header">
                         Events in this group
                     </div>
-                    <ul class="list-group list-group-flush">
-                    {% for event in events %}
+                    <ul class="list-group list-group-flush " id="events-all">
+                    {% for event in first_page_event %}
                         {% if event.state == "P1" %}
-                        <li class="list-group-item">
+                        <li class="list-group-item ">
                             <div id="list-group-item-{{event.id}}">
                                 <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
                                 <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"><button class="btn btn-success float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button></p>
@@ -80,7 +84,7 @@
                             {% endif %}
                             <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right">Edit</button></a>
                             <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1"">Delete</button></a>
-                        </li>               
+                        </li>
                         {% else %}
                         <li class="list-group-item">
                             <div id="list-group-item-{{event.id}}">
@@ -89,7 +93,7 @@
                                 <div class="card">
                                     <ul class="list-group">
                                     {% for attender in event.attender.all %}
-                                        <li class="list-group-item">{{attender.user}}</li>
+                                        <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{attender.user}}</a></li>
                                     {% endfor %}
                                     </ul>
                                 </div>
@@ -99,14 +103,20 @@
                             <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1">Delete</button></a>
                         </li>
                         {% endif %}
-
                     {% endfor %}
                     </ul>
                 </div>
+                <nav aria-label="..." >
+                    <ul class="pagination pagination-sm justify-content-center">
+                        {% for i in page_list_event %}
+                        <li class="page-item" id="pagination-event-li-{{i}}"><a class="page-link" onclick=paginate_event({{i}}) >{{i}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
             </div>
 
             <div class="col-md">
-                <div class="card float-right" style="width: 30rem;">
+                <div class="card float-right border-primary mb-3" style="width: 36rem;">
                     <div class="card-header">
                         Friends in this group
                     </div>
@@ -228,7 +238,7 @@ function plan(e_id){
 <script>
 function ajax_function(page) {
     $.ajax({
-        url: "{% url 'paginate' %}",
+        url: "{% url 'paginate_event' %}",
         type: "get",
         data: {
             'page': page,
@@ -247,6 +257,23 @@ function ajax_function(page) {
     });
 }
 </script>
+
+<script>
+function paginate_event(page) {
+    $.ajax({
+        url: "{% url 'paginate_event' %}",
+        type: "get",
+        data: {
+            'page': page,
+            'group': {{group.id}},
+        },
+        success: function (data) {
+            jQuery('#events-all').html(data);
+        }
+    });
+}
+</script>
+
 
 
 {% endblock extra_script %}

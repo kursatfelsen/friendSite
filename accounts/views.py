@@ -31,6 +31,8 @@ class CustomLoginRequiredMixin(LoginRequiredMixin):
 
 # account/signup/
 class SignupView(View):
+    """Signup view. Uses UserCrationForm and validates with also ajax in username field. New users should be added as friend too."""
+
     def render(self, request):
         return render(request, 'signup.html', {'form': self.form})
 
@@ -55,6 +57,8 @@ class SignupView(View):
 
 # account/login/
 class LoginView(View):
+    """Login view."""
+
     def render(self, request):
         return render(request, 'login.html')
 
@@ -77,6 +81,7 @@ class LoginView(View):
 
 # account/logout
 class LogoutView(CustomLoginRequiredMixin, View):
+    """Logout View."""
     login_url = 'login'
 
     def get(self, request):

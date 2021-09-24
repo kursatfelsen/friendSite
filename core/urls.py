@@ -24,4 +24,5 @@ urlpatterns = [
     path('add/',AddUserToGroupAjax.as_view(),name='addUserToGroup'),
     path('plan/',PlanAjax.as_view(),name='plan'),
     path('paginate/',UserPaginateAjax.as_view(),name='paginate'),
+    path('eventpaginate/',EventPaginateAjax.as_view(),name='paginate_event'),
 ]

@@ -1,0 +1,33 @@
+{% for event in events %}
+    {% if event.state == "P1" %}
+    <li class="list-group-item ">
+        <div id="list-group-item-{{event.id}}">
+            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
+            <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"><button class="btn btn-success float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button></p>
+            <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"><button class="btn btn-secondary float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button></p>
+        </div>
+        {% if event.creator.id == user.id and event.state == "P1" %}
+            <button onclick=plan({{event.id}}) id="event-is-on-{{event.id}}" class="btn btn-warning"> Event is on!</button>
+        {% endif %}
+        <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right">Edit</button></a>
+        <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1"">Delete</button></a>
+    </li>
+    {% else %}
+    <li class="list-group-item">
+        <div id="list-group-item-{{event.id}}">
+            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
+            <h6>Attenders:</h6>
+            <div class="card">
+                <ul class="list-group">
+                {% for attender in event.attender.all %}
+                    <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{attender.user}}</a></li>
+                {% endfor %}
+                </ul>
+            </div>
+            <br>
+        </div>
+        <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right ">Edit</button></a>
+        <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1">Delete</button></a>
+    </li>
+    {% endif %}
+{% endfor %}

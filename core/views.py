@@ -37,11 +37,10 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
             friendGroup=self.group)
         context = {
             'group': self.group,
-            'events': self.events,
+            'events': self.first_page_event,
             'friends': friends_that_are_not_in_group,
             'page_list': self.page_list,
-            'first_page': self.first_page,
-            'first_page_event': self.first_page_event,
+            'page': self.first_page,
             'page_list_event': self.page_list_event,
         }
         return render(request, 'detail.html', context)
@@ -331,10 +330,9 @@ class UserPaginateAjax(View):
         group = request.GET.get('group', None)
         starting_number = (page-1)*4
         ending_number = page*4
-        result = list(Friend.objects.filter(friendGroup__id=group)[
-            starting_number:ending_number].values_list('user__username'))
-        data = {'result': result}
-        return JsonResponse(data)
+        friends = list(Friend.objects.filter(friendGroup__id=group)[
+            starting_number:ending_number])
+        return render(request, 'ajax_render/user_pagination.html', {'page': friends})
 
 
 # eventpaginate/
@@ -346,6 +344,6 @@ class EventPaginateAjax(View):
         group = request.GET.get('group', None)
         starting_number = (page-1)*3
         ending_number = page*3
-        result = list(Event.objects.filter(group__id=group)[
+        events = list(Event.objects.filter(group__id=group)[
             starting_number:ending_number])
-        return render(request, 'ajax_render/event_pagination.html', {'events': result})
+        return render(request, 'ajax_render/event_pagination.html', {'events': events})

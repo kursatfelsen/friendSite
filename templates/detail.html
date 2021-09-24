@@ -29,35 +29,14 @@
                     </div>
                 </div>
                 <div class="row" id="friend-list">
-                    {% for friend in first_page %}
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <a href="{% url 'profile' friend.user.username %}">
-                            <div class="single_advisor_profile wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
-                                <!-- Team Thumb-->
-                                <div class="advisor_thumb"><img src="{{friend.img}}"  alt="">
-                                <!-- Social Info-->
-                                <div class="social-info"><a href="#"><i class="fa fa-facebook"></i></a><a href="#"><i class="fa fa-twitter"></i></a><a href="#"><i class="fa fa-linkedin"></i></a></div>
-                                </div>
-                                <!-- Team Details-->
-                                <div class="single_advisor_details_info">
-                                <h6>{{friend.user.username}}</h6>
-                                {% if friend.description %}
-                                    <p class="designation">{{friend.description}}</p>
-                                {% else %}
-                                    <br>
-                                {% endif %}
-                                </div>
-                            </div>
-                            </a>
-                        </div>
-                    {% endfor %}
+                    {% include 'ajax_render/user_pagination.html' %}
                     
                     <!-- Single Advisor-->
                 </div>
                 <nav aria-label="..." >
                     <ul class="pagination pagination-sm justify-content-center">
                         {% for i in page_list %}
-                        <li class="page-item" id="pagination-li-{{i}}"><a class="page-link" onclick=ajax_function({{i}}) >{{i}}</a></li>
+                        <li class="page-item" id="pagination-li-{{i}}"><a class="page-link" onclick=paginate_user({{i}}) >{{i}}</a></li>
                         {% endfor %}
                     </ul>
                 </nav>
@@ -71,39 +50,7 @@
                         Events in this group
                     </div>
                     <ul class="list-group list-group-flush " id="events-all">
-                    {% for event in first_page_event %}
-                        {% if event.state == "P1" %}
-                        <li class="list-group-item ">
-                            <div id="list-group-item-{{event.id}}">
-                                <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
-                                <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"><button class="btn btn-success float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button></p>
-                                <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"><button class="btn btn-secondary float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button></p>
-                            </div>
-                            {% if event.creator.id == user.id and event.state == "P1" %}
-                                <button onclick=plan({{event.id}}) id="event-is-on-{{event.id}}" class="btn btn-warning"> Event is on!</button>
-                            {% endif %}
-                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right">Edit</button></a>
-                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1"">Delete</button></a>
-                        </li>
-                        {% else %}
-                        <li class="list-group-item">
-                            <div id="list-group-item-{{event.id}}">
-                                <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">Status: {{event.get_state_display}}</span>
-                                <h6>Attenders:</h6>
-                                <div class="card">
-                                    <ul class="list-group">
-                                    {% for attender in event.attender.all %}
-                                        <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{attender.user}}</a></li>
-                                    {% endfor %}
-                                    </ul>
-                                </div>
-                                <br>
-                            </div>
-                            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right ">Edit</button></a>
-                            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1">Delete</button></a>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
+                    {% include 'ajax_render/event_pagination.html' %}
                     </ul>
                 </div>
                 <nav aria-label="..." >
@@ -236,23 +183,16 @@ function plan(e_id){
 </script>
 
 <script>
-function ajax_function(page) {
+function paginate_user(page) {
     $.ajax({
-        url: "{% url 'paginate_event' %}",
+        url: "{% url 'paginate' %}",
         type: "get",
         data: {
             'page': page,
             'group': {{group.id}},
         },
-        dataType: 'json',
         success: function (data) {
-            document.getElementById('friend-list').innerHTML = "";
-            var str = "";
-            for (i = 0; i < data.result.length; i++) {
-              str += '<div class="col-12 col-sm-6 col-lg-3"><div class="single_advisor_profile wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;"><!-- Team Thumb--><div class="advisor_thumb"><img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt=""><div class="social-info"><a href="#"><i class="fa fa-facebook"></i></a><a href="#"><i class="fa fa-twitter"></i></a><a href="#"><i class="fa fa-linkedin"></i></a></div></div><div class="single_advisor_details_info"><h6>'
-              str += data.result[i]+'</h6><p class="designation"></p></div></div></div>';
-            }
-            document.getElementById('friend-list').innerHTML = str;
+            jQuery('#friend-list').html(data);
         }
     });
 }

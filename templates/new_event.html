@@ -7,15 +7,15 @@
 {% endblock extra_head %}
 
 {% block body %}
-
-<form action="{% url 'new_event_post' %}" id="address-form" method="POST">
+<div id="div-1">
+<form action="#" id="address-form" method="POST">
     {% for error in form.non_field_errors %}
         <div class="alert alert-warning" role="alert">{{ error }}</div>
     {% endfor %}
     {% csrf_token %}
     {% for field in form.visible_fields %}
         <div class="form-group">
-        {{ field.label }} 
+        {{ field.label }}
         {{ field.errors }}
         {{ field }}
         {% if field.help_text %}
@@ -23,25 +23,30 @@
         {% endif %}
         </div>
     {% endfor %}
-    <label for="pac-input"> Select location</label>
-    <input
-      id="pac-input"
-      class="controls"
-      type="text"
-      placeholder="Search Box"
-    />
-    <div id="map"></div>
     {% for field in form.hidden_fields %}
         {{ field }}
-    {% endfor %}
-
-    <button type="submit" class="btn btn-danger">Create a new event</button>
+    {% endfor %}  
 </form>
-
+<button type="submit" onclick=submit_event() class="btn btn-danger">Create a new event</button>
+</div>
 {% endblock body %}
 
 
 {% block extra_script %}
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initAutocomplete&libraries=places&v=weekly" async></script>
 
+<script>
+    function submit_event() {
+    $.ajax({
+        url: "{% url 'submit_event' %}",
+        type: "post",
+        data: $('#address-form').serialize(),
+        success: function (data) {
+            jQuery('#address-form').outerHTML = "";
+            jQuery('#div-1').html(data);
+            initAutocomplete();
+        }
+    });
+}
+</script>
 {% endblock %}

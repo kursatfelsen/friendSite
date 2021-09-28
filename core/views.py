@@ -7,7 +7,7 @@ from django.views import View
 
 from accounts.views import CustomLoginRequiredMixin
 
-from .forms import NewEventForm, NewGroupForm
+from .forms import LocationForm, NewEventForm, NewGroupForm, LocationForm
 from .models import Event, Friend, FriendGroup, Vote
 
 
@@ -90,11 +90,14 @@ class GroupCreateView(CustomLoginRequiredMixin, View):
 
     def get(self, request):
         self.form = NewGroupForm(
-            initial={'creator': request.user.friend.get().id})
+            initial={'creator': request.user.username})
         return render(request, 'new_group.html', context={'form': self.form})
 
     def post(self, request):
-        self.form = NewGroupForm(request.POST)
+        formData =  request.POST.copy()
+        formData['creator'] = request.user.id
+        self.form = NewGroupForm(formData)
+        
         if self.form.is_valid():
             group = self.form.save()
             group.creator = request.user  # Assigning user for security reasons
@@ -150,11 +153,15 @@ class NewEventView(CustomLoginRequiredMixin, View):
         return self.render(request)
 
     def post(self, request):
-        self.form = NewEventForm(request.POST)
-        if self.form.is_valid():
-            event = self.form.save()
-            return redirect('event_detail', event.id)
-        return self.render(request)
+        event_id = request.POST.get('event-id')
+        self.location_form = LocationForm(request.POST)
+        if self.location_form.is_valid():
+            location = self.location_form.save()
+            event = Event.objects.get(id = event_id)
+            event.location = location
+            event.save()
+            return redirect('home')
+        return redirect('home')
 
 # event/detail/event_id
 
@@ -347,3 +354,17 @@ class EventPaginateAjax(View):
         events = list(Event.objects.filter(group__id=group)[
             starting_number:ending_number])
         return render(request, 'ajax_render/event_pagination.html', {'events': events})
+
+
+# submit/
+class SubmitEventFormAjax(View):
+    """For Ajax response - Handles form submission"""
+
+    def post(self, request):
+        form = NewEventForm(request.POST)
+        if form.is_valid():
+            
+            event = form.save()
+            form_location = LocationForm()
+            return render(request,'ajax_render/map_form.html',context={'form_location':form_location,'event_id':event.id})
+

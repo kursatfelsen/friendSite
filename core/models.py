@@ -11,8 +11,8 @@ class FriendGroup(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     img_url = models.TextField(blank=True)
     is_private = models.BooleanField(blank=True, default=False)
-    #friend_set for friendGroup field in Friend
-    #event_set for group field in Event
+    # friend_set for friendGroup field in Friend
+    # event_set for group field in Event
 
     def __str__(self):
         return self.name
@@ -30,10 +30,10 @@ class Friend(models.Model):
     address = models.CharField(max_length=200, blank=True, null=True)
     fullname = models.CharField(max_length=30, blank=True)
     phone = PhoneNumberField(blank=True)
-    #event for creator
-    #event_set for group field in Event
-    #attending_set for attender field in Event
-    #vote_set for friend field in Vote
+    # event for creator
+    # event_set for group field in Event
+    # attending_set for attender field in Event
+    # vote_set for friend field in Vote
 
     def __str__(self):
         return self.user.username
@@ -43,6 +43,32 @@ class Friend(models.Model):
 
     def leave_group(self, group_id):
         self.friendGroup.remove(FriendGroup.objects.get(id=group_id))
+
+
+class Location(models.Model):
+    id = models.CharField(primary_key=True, max_length=100)
+    name = models.CharField(
+        verbose_name="name", max_length=200, null=True, blank=True)
+    address = models.CharField(
+        verbose_name="Address", max_length=300, null=True, blank=True)
+    phone_number = models.CharField(
+        verbose_name="Phone", max_length=100, null=True, blank=True)
+    website = models.CharField(
+        verbose_name="Website", max_length=1000, null=True, blank=True)
+    rating = models.CharField(
+        verbose_name="Rating", max_length=40, null=True, blank=True)
+    type = models.CharField(
+        verbose_name="Type", max_length=100, null=True, blank=True)
+    photo_url = models.CharField(
+        verbose_name="Photo", max_length=2000, null=True, blank=True)
+
+    longitude = models.CharField(
+        verbose_name="Longitude", max_length=50, null=True, blank=True)
+    latitude = models.CharField(
+        verbose_name="Latitude", max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Event(models.Model):
@@ -64,27 +90,7 @@ class Event(models.Model):
     start_time = models.TimeField(null=True)
     end_date = models.DateField(null=True)
     end_time = models.TimeField(null=True)
-    location_id = models.CharField(
-        verbose_name="Id", max_length=100, null=True, blank=True)
-    location_name = models.CharField(
-        verbose_name="name", max_length=200, null=True, blank=True)
-    location_address = models.CharField(
-        verbose_name="Address", max_length=300, null=True, blank=True)
-    location_phone_number = models.CharField(
-        verbose_name="Phone", max_length=100, null=True, blank=True)
-    location_website = models.CharField(
-        verbose_name="Website", max_length=1000, null=True, blank=True)
-    location_rating = models.CharField(
-        verbose_name="Rating", max_length=40, null=True, blank=True)
-    location_type = models.CharField(
-        verbose_name="Type", max_length=100, null=True, blank=True)
-    location_photo_url = models.CharField(
-        verbose_name="Photo", max_length=2000, null=True, blank=True)
-
-    location_longitude = models.CharField(
-        verbose_name="Longitude", max_length=50, null=True, blank=True)
-    location_latitude = models.CharField(
-        verbose_name="Latitude", max_length=50, null=True, blank=True)
+    location = models.ForeignKey(Location, blank=True, on_delete=models.CASCADE,null=True)
 
     group = models.ForeignKey(FriendGroup, on_delete=models.CASCADE)
     state = models.CharField(
@@ -93,7 +99,7 @@ class Event(models.Model):
         default=PROPOSED,
     )
     ranking = models.IntegerField(null=True, default=0)
-    #vote_set for event field in Vote
+    # vote_set for event field in Vote
 
     def __str__(self):
         return self.name

@@ -33,14 +33,16 @@ function initAutocomplete() {
     let postcode = "";
     const places = searchBox.getPlaces();
     console.log();
-    document.querySelector("#formatted_address").value = "";
-    document.querySelector("#name").value = "";
-    document.querySelector("#formatted_phone_number").value = "";
-    document.querySelector("#place_id").value = "";
-    document.querySelector("#website").value = "";
-    document.querySelector("#rating").value = "";
-    document.querySelector("#type").value = "";
-    document.querySelector("#photo").value = "";
+    document.querySelector("#id_address").value = "";
+    document.querySelector("#id_name").value = "";
+    document.querySelector("#id_phone_number").value = "";
+    document.querySelector("#id_id").value = "";
+    document.querySelector("#id_website").value = "";
+    document.querySelector("#id_rating").value = "";
+    document.querySelector("#id_type").value = "";
+    document.querySelector("#id_photo_url").value = "";
+    document.querySelector("#id_longitude").value = "";
+    document.querySelector("#id_latitude").value = "";
     if (places.length == 0) {
       return;
     }
@@ -87,16 +89,16 @@ function initAutocomplete() {
     map.fitBounds(bounds);
     console.log(places)
     console.log(places[0].name)
-    document.querySelector("#formatted_address").value = places[0].formatted_address;
-    document.querySelector("#name").value = places[0].name;
-    document.querySelector("#formatted_phone_number").value = places[0].formatted_phone_number;
-    document.querySelector("#place_id").value = places[0].place_id;
-    document.querySelector("#website").value = places[0].website;
-    document.querySelector("#rating").value = places[0].rating; //htmle ekle
-    document.querySelector("#type").value = places[0].types[0];//htmle ekle
-    document.querySelector("#photo").value = places[0].photos[0].getUrl();
-    document.querySelector("#longtitude").value = places[0].geometry.location.lng();
-    document.querySelector("#latitude").value = places[0].geometry.location.lat();
+    document.querySelector("#id_address").value = places[0].formatted_address;
+    document.querySelector("#id_name").value = places[0].name;
+    document.querySelector("#id_phone_number").value = places[0].formatted_phone_number;
+    document.querySelector("#id_id").value = places[0].place_id;
+    document.querySelector("#id_website").value = places[0].website;
+    document.querySelector("#id_rating").value = places[0].rating; //htmle ekle
+    document.querySelector("#id_type").value = places[0].types[0];//htmle ekle
+    document.querySelector("#id_photo_url").value = places[0].photos[0].getUrl();
+    document.querySelector("#id_longitude").value = places[0].geometry.location.lng();
+    document.querySelector("#id_latitude").value = places[0].geometry.location.lat();
   });
 
 }

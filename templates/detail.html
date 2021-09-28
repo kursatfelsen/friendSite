@@ -11,7 +11,7 @@
           <h1 class="jumbotron-heading">Welcome to {{group.name}}'s group page!</h1>
           <p class="lead text-muted">You can see your friend group area and arrange new events here!</p>
           <p>
-            <a href="#" class="btn btn-primary my-2">Create a new event</a>
+            <a href="{% url 'new_event_get' group.id %}" class="btn btn-primary my-2">Create a new event</a>
             <a href="#" class="btn btn-secondary my-2">Edit an event</a>
           </p>
         </div>
@@ -65,11 +65,15 @@
             <div class="col-md">
                 <div class="card float-right border-primary mb-3" style="width: 36rem;">
                     <div class="card-header">
-                        Friends in this group
+                        Dismiss friends
                     </div>
                     <ul class="list-group list-group-flush" id="friend-list-add">
                     {% for friend in group.get_friends %}
-                        <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger float-right">Dismiss</button></li>
+                        {% if friend.user == request.user or group.creator == friend.user %}
+                        {% else %}
+                            <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger float-right">Dismiss</button></li>
+                        {% endif %}
+
                     {% endfor %}
                     </ul>
                     <div class="card-footer">
@@ -112,10 +116,6 @@ function dismiss(u_id, g_id){
         });
     }
 
-</script>
-
-<script>
-
 function vote(u_id, e_id, status){
         $.ajax({
             url: {% url 'vote' %},
@@ -127,9 +127,6 @@ function vote(u_id, e_id, status){
             }
         });
     }
-</script>
-
-<script>
 
 function addUserToGroup(){
         g_id = {{group.id}};
@@ -158,10 +155,6 @@ function addUserToGroup(){
         });
     }
 
-</script>
-
-<script>
-
 function plan(e_id){
         $.ajax({
             url: {% url 'plan' %},
@@ -180,9 +173,7 @@ function plan(e_id){
             }
         });
     }
-</script>
 
-<script>
 function paginate_user(page) {
     $.ajax({
         url: "{% url 'paginate' %}",
@@ -196,9 +187,7 @@ function paginate_user(page) {
         }
     });
 }
-</script>
 
-<script>
 function paginate_event(page) {
     $.ajax({
         url: "{% url 'paginate_event' %}",

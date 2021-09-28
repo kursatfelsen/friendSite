@@ -1,0 +1,26 @@
+<label for="pac-input"> Select location</label>
+    <input
+        id="pac-input"
+        class="controls"
+        type="text"
+        placeholder="Search Box"
+    />
+<div id="map"></div>
+<form action="{% url 'new_event_post' %}" id="address-form" method="POST">
+    {% csrf_token %}
+    {% for field in form_location.visible_fields %}
+        <div class="form-group">
+        {{ field.label }}
+        {{ field.errors }}
+        {{ field }}
+        {% if field.help_text %}
+            <p class="help_text">{{ field.help_text }}</p>
+        {% endif %}
+        </div>
+    {% endfor %}
+    {% for field in form_location.hidden_fields %}
+        {{ field }}
+    {% endfor %}
+    <input type="text" value="{{event_id}}" name="event-id" id="event-id" hidden>
+    <button type="submit" class="btn btn-danger">Select Location</button>
+</form>

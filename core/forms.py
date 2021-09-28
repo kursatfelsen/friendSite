@@ -6,7 +6,7 @@ from django.forms.widgets import TimeInput
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from .models import Event, FriendGroup
+from .models import Event, FriendGroup, Location
 
 
 
@@ -27,16 +27,7 @@ class NewEventForm(forms.ModelForm):
             'start_time',
             'end_date',
             'end_time',
-            'location_id',
-            'location_name',
-            'location_address',
-            'location_phone_number',
-            'location_website',
-            'location_rating',
-            'location_type',
-            'location_photo_url',
-            'location_longitude',
-            'location_latitude',
+            'location',
             'group',
             'creator',
         ]
@@ -51,9 +42,43 @@ class NewEventForm(forms.ModelForm):
             }),
             'start_time': TimeInput(),
             'end_time': TimeInput(),
-            'location_id': forms.HiddenInput(attrs={
+            'location': forms.HiddenInput(attrs={
                 'id': 'place_id',
             }),
+            'creator': forms.HiddenInput(attrs={
+                'id': 'creator',
+            }),
+            'group': forms.HiddenInput(attrs={
+                'id': 'group',
+            }),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        #Protection against old date input
+        if cleaned_data['start_date'] > cleaned_data['end_date']:
+            raise ValidationError('End date must be later than start date.')
+        if cleaned_data['start_date'] < datetime.datetime.now().date():
+            raise ValidationError('Start date must be later than now.')
+
+
+class NewGroupForm(forms.ModelForm):
+    class Meta:
+        model = FriendGroup
+        fields = '__all__'
+        widgets = {
+            'creator': forms.TextInput(attrs={ #This field is not for taking input, just for giving info to user
+                'readonly': "readonly",
+                'id':'creator',
+            })}
+
+
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = '__all__'
+        widgets = {
             'location_name': forms.HiddenInput(attrs={
                 'id': 'name',
             }),
@@ -81,43 +106,24 @@ class NewEventForm(forms.ModelForm):
             'location_latitude': forms.HiddenInput(attrs={
                 'id': 'latitude',
             }),
-            'creator': forms.HiddenInput(attrs={
-                'id': 'creator',
-            }),
         }
 
     def clean(self):
         cleaned_data = super().clean()
-
-        #Protection against old date input
-        if cleaned_data['start_date'] > cleaned_data['end_date']:
-            raise ValidationError('End date must be later than start date.')
-        if cleaned_data['start_date'] < datetime.datetime.now().date():
-            raise ValidationError('Start date must be later than now.')
-
         #Google places api undefined data fields should be empty.
-        if cleaned_data['location_name'] == "undefined":
-            cleaned_data['location_name'] = ""
-        if cleaned_data['location_address'] == "undefined":
-            cleaned_data['location_address'] = ""
-        if cleaned_data['location_phone_number'] == "undefined":
-            cleaned_data['location_phone_number'] = ""
-        if cleaned_data['location_website'] == "undefined":
-            cleaned_data['location_website'] = ""
-        if cleaned_data['location_rating'] == "undefined":
-            cleaned_data['location_rating'] = ""
-        if cleaned_data['location_type'] == "undefined":
-            cleaned_data['location_type'] = ""
-        if cleaned_data['location_photo_url'] == "undefined":
-            cleaned_data['location_photo_url'] = ""
+        cleaned_data['type'] = cleaned_data['type'].replace('_',' ')
+        if cleaned_data['name'] == "undefined":
+            cleaned_data['name'] = ""
+        if cleaned_data['address'] == "undefined":
+            cleaned_data['address'] = ""
+        if cleaned_data['phone_number'] == "undefined":
+            cleaned_data['phone_number'] = ""
+        if cleaned_data['website'] == "undefined":
+            cleaned_data['website'] = ""
+        if cleaned_data['rating'] == "undefined":
+            cleaned_data['rating'] = ""
+        if cleaned_data['type'] == "undefined":
+            cleaned_data['type'] = ""
+        if cleaned_data['photo_url'] == "undefined":
+            cleaned_data['photo_url'] = ""
         return cleaned_data
-
-
-class NewGroupForm(forms.ModelForm):
-    class Meta:
-        model = FriendGroup
-        fields = '__all__'
-        widgets = {
-            'creator': forms.HiddenInput(attrs={ #This field is not for taking input, just for giving info to user
-                'disabled': "true",
-            })}

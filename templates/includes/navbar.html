@@ -31,7 +31,7 @@
         <strong>Friends</strong>
       </a>
       <a class="text-white" href="{% if user.is_authenticated %}{% url 'profile' request.user.username %}{% else %}{% url 'login' %}{% endif %}">
-        {% if user.is_authenticated %}Welcome {{user.username}}{% else %}Welcome, please login.{% endif %}
+        {% if request.user.is_authenticated %}Welcome {{request.user.username}}{% else %}Welcome, please login.{% endif %}
       </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>

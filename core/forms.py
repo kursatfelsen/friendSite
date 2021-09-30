@@ -5,8 +5,9 @@ from django import forms
 from django.forms.widgets import TimeInput
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.contrib.auth.models import User
 
-from .models import Event, FriendGroup, Location
+from .models import Calendar, Event, FriendGroup, Location
 
 
 
@@ -127,3 +128,29 @@ class LocationForm(forms.ModelForm):
         if cleaned_data['photo_url'] == "undefined":
             cleaned_data['photo_url'] = ""
         return cleaned_data
+
+
+class CalendarForm(forms.ModelForm):
+    visible_for = forms.CharField(required=False)
+    editable_by = forms.CharField(required=False)
+
+    class Meta:
+        model = Calendar
+        exclude = ("owner","visible_for","editable_by")
+
+    def save(self, commit=True):
+        calendar = self.instance
+        for email in self.cleaned_data["visible_for"].split(";"):
+            if User.objects.filter(email=email).exists():
+                calendar.visible_for.add(email)
+        for email in self.cleaned_data["editable_by"].split(";"):
+            if User.objects.filter(email=email).exists():
+                calendar.editable_by.add(email)
+        if commit:
+            calendar.save()
+        return calendar
+
+# class EventForm(forms.ModelForm):
+#     class Meta:
+#         model = Event
+#         exclude = ()

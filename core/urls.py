@@ -17,7 +17,7 @@ urlpatterns = [
     path('event/detail/<int:event_id>',EventDetailView.as_view(),name='event_detail'),
     path('event/edit/<int:event_id>',EventEditView.as_view(),name = 'event_edit'),
     path('event/delete/<int:event_id>',EventDeleteView.as_view(),name='event_delete'),
-
+    
     #Ajax
     path('dismiss/',DismissAjax.as_view(),name='dismiss'),
     path('vote/',VoteAjax.as_view(),name='vote'),

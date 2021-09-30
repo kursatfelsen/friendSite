@@ -1,3 +1,4 @@
+from core.serializers import EventSerializer
 from django.contrib import messages
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
@@ -7,7 +8,7 @@ from django.views import View
 
 from accounts.views import CustomLoginRequiredMixin
 
-from .forms import LocationForm, NewEventForm, NewGroupForm, LocationForm
+from .forms import CalendarForm, LocationForm, NewEventForm, NewGroupForm, LocationForm
 from .models import Event, Friend, FriendGroup, Vote
 
 
@@ -155,6 +156,7 @@ class NewEventView(CustomLoginRequiredMixin, View):
     def post(self, request):
         event_id = request.POST.get('event-id')
         self.location_form = LocationForm(request.POST)
+        print(self.location_form)
         if self.location_form.is_valid():
             location = self.location_form.save()
             event = Event.objects.get(id = event_id)
@@ -367,4 +369,3 @@ class SubmitEventFormAjax(View):
             event = form.save()
             form_location = LocationForm()
             return render(request,'ajax_render/map_form.html',context={'form_location':form_location,'event_id':event.id})
-

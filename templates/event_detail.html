@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block body %}
 <h1 class="text-center">Event Details<a href="{% url 'detail' event.group.id %}" class="text-decoration-none text-white"><button class="btn btn-danger ml-4">Turn back to group</a></span></h1>
 
@@ -15,20 +16,37 @@
       </ul>
     </div>
   {% if event.state != "P1" %}
-    <div class="card border-primary mx-auto " style="width: 30rem;">
-      <div class="card-header">
-        Attenders
-      </div>
-      <ul class="list-group list-group-flush">
-        {% for attender in event.attender.all %}
-        <li class="list-group-item">{{attender.user.username}}</li>
-        {% endfor %}
-      </ul>
+    <div id="event-attender">
+    {% include "ajax_render/event_detail_planned.html" %}
     </div>
   {% else %}
   {% endif %}
 
 </div>
+<br>
+
+<div class="row d-flex align-items-stretch">
+  <div class="border-primary mx-auto " style="width: 30rem;">
+{% if event.state == "P1" %}
+    <div id="list-group-item-{{event.id}}">
+        
+        <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"><button class="btn btn-success float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button></p>
+        <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"><button class="btn btn-secondary float-right" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button></p>
+    </div>
+    {% if event.creator.user.id == user.id and event.state == "P1" %}
+        <button onclick=plan({{event.id}}) id="event-is-on-{{event.id}}" class="btn btn-warning"> Event is planned!</button>
+    {% endif %}
+    {% if event.creator.user.id == user.id %}
+        <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right">Edit</button></a>
+        <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1">Delete</button></a>
+    {% endif %}
+{% else %}
+    <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right ">Edit</button></a><span></span>
+    <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1">Delete</button></a>
+{% endif %}
+  </div>
+</div>
+
 <br>
 {% if event.location %}
 <h2 class="text-center">Location details</h2>
@@ -82,5 +100,41 @@ function initMap() {
 
 </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initMap&libraries=&v=weekly" async></script>
+
+<script>
+
+function vote(u_id, e_id, status){
+        $.ajax({
+            url: {% url 'vote' %},
+            type: "GET",
+            data: {'user_id': u_id,'event_id':e_id,'status':status},
+            success: function (data) {
+                document.getElementById(e_id+'-0').value = data.nas;
+                document.getElementById(e_id+'-1').value = data.yeas;
+            }
+        });
+    }
+
+function plan(e_id){
+        $.ajax({
+            url: {% url 'plan' %},
+            type: "GET",
+            data: {'event_id':e_id},
+            success: function (data) {
+                document.getElementById('event-is-on-'+e_id).remove();
+                if (data.planned){
+                    str = '<div id="list-group-item-'+e_id+'"><a href="/event/detail/'+e_id+'">'+data.event_name+'</a><span class="float-right" id="status-'+e_id+'">Status:Planned</span><h5>Attenders:</h5><div class="card"><ul class="list-group">';
+                    for (var i=0;i<data.attenders.length;i++){
+                        str += '<li class="list-group-item">'+ data.attenders[i] +'</li>';
+                    }
+                    str += '</ul></div><br></div>';
+                    document.getElementById('list-group-item-'+e_id).outerHTML = str;
+                }
+            }
+        });
+    }
+</script>
 {% endblock extra_script %}
     
+
+

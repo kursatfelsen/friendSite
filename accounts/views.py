@@ -1,3 +1,4 @@
+from core.forms import CalendarForm
 from accounts.forms import UserProfileForm
 
 from core.models import Event, Friend
@@ -136,15 +137,22 @@ class ProfileView(CustomLoginRequiredMixin, View):
 
 
 """For future calendarview purposes"""
-# class CalendarView(CustomLoginRequiredMixin, View):
-#     def render(self,request):
-#         return render(request,'calendar.html')
-#     def get(self,request, username):
-#         self.user = User.objects.get(username=username)
-#         if request.user.username == self.user.username:
-#             return self.render(request)
-#         messages.error(request, "You have no access to that area.")
-#         return redirect('home')
+class CalendarView(CustomLoginRequiredMixin, View):
+    def render(self,request):
+        return render(request,'calendar.html',self.context)
+
+    def get(self,request, username):
+        self.user = User.objects.get(username=username)
+        if request.user.username == self.user.username:
+            form = CalendarForm()
+            self.context = {
+                'events' : Event.objects.filter(attender = request.user.friend.get()),
+                'form' : form,
+            }
+            
+            return self.render(request)
+        messages.error(request, "You have no access to that area.")
+        return redirect('home')
 
 
 # signup/validate_username/

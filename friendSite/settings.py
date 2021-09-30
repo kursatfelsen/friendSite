@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'googlemaps',
     'phonenumber_field',
+    'rest_framework',
     
     'accounts',
     'core',
@@ -92,6 +93,7 @@ DATABASES = {
         'PASSWORD': 'root',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
+        'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
 

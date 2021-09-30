@@ -71,6 +71,16 @@ class Location(models.Model):
         return self.name
 
 
+class Calendar(models.Model):
+    name = models.CharField(max_length=255)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    visible_for = models.ManyToManyField(User, related_name="visible_for")
+    editable_by = models.ManyToManyField(User, related_name="editable_by")
+
+    def __str__(self):
+        return self.name
+
+        
 class Event(models.Model):
     PROPOSED = 'P1'
     PLANNED = 'P2'
@@ -91,7 +101,7 @@ class Event(models.Model):
     end_date = models.DateField(null=True)
     end_time = models.TimeField(null=True)
     location = models.ForeignKey(Location, blank=True, on_delete=models.CASCADE,null=True)
-
+    #calendar = models.ForeignKey(Calendar, blank=True, on_delete=models.CASCADE)
     group = models.ForeignKey(FriendGroup, on_delete=models.CASCADE)
     state = models.CharField(
         max_length=2,
@@ -118,3 +128,4 @@ class Vote(models.Model):
 
     def __str__(self):
         return f"{self.friend}'s vote on {self.event}: {self.status}"
+

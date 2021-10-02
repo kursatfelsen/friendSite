@@ -1,0 +1,16 @@
+{% if request.user == user %}
+    <a href="{% url 'calendar' request.user %}"><button class="btn btn-outline-primary">Calendar</button></a>
+    {% else %}
+    {% if friend.is_friend %}
+    <p class="text-muted font-size-sm"> You are friends!</p>
+    {% else %}
+        {% if friend_request %}
+            <p class="text-muted font-size-sm"> Friend request has been sent.</p>
+            <button class="btn btn-danger" onclick=cancel_request({{friend_request.id}})>Cancel request</button>
+        {% else %}
+            <p class="text-muted font-size-sm"> Your are not friends.</p>
+            <button id="add-friend-button" onclick=add_friend() class="btn btn-primary">Add friend</button>
+        {% endif %}
+    {% endif %}
+    <a href="{% url 'calendar' request.user %}"><button class="btn btn-outline-primary">Calendar</button></a>
+{% endif %}

@@ -25,6 +25,7 @@ class Friend(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='friend')
     friendGroup = models.ManyToManyField(FriendGroup, blank=True)
+    friendWith = models.ManyToManyField('self',blank=True)
     description = models.TextField(blank=True)
     img = models.TextField(blank=True)
     address = models.CharField(max_length=200, blank=True, null=True)
@@ -43,6 +44,18 @@ class Friend(models.Model):
 
     def leave_group(self, group_id):
         self.friendGroup.remove(FriendGroup.objects.get(id=group_id))
+
+    def add_friend(self,friend_id):
+        self.friendWith.add(Friend.objects.get(id=friend_id))
+    
+    def remove_friend(self, friend_id):
+        self.friendWith.remove(Friend.objects.get(id=friend_id))
+
+    def is_friend(self, friend_id):
+        friend = Friend.objects.get(id = friend_id)
+        if (friend in self.friendWith.all()):
+            return True
+        return False
 
 
 class Location(models.Model):
@@ -129,3 +142,11 @@ class Vote(models.Model):
     def __str__(self):
         return f"{self.friend}'s vote on {self.event}: {self.status}"
 
+
+class FriendRequest(models.Model):
+    sender = models.ForeignKey(Friend,on_delete=models.DO_NOTHING,related_name='sent_request')
+    receiver = models.ForeignKey(Friend,on_delete=models.DO_NOTHING,related_name='received_request')
+    status = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.sender}'s request to {self.receiver}: {self.status}"

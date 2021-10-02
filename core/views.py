@@ -1,4 +1,3 @@
-from core.serializers import EventSerializer
 from django.contrib import messages
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
@@ -34,8 +33,8 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
     """A friend group's detail view. Friends and events will be rendered for the view. Most of event operations are done here."""
 
     def render(self, request):
-        friends_that_are_not_in_group = Friend.objects.exclude(
-            friendGroup=self.group)
+        friends_that_are_not_in_group = Friend.objects.filter(
+            Q(friendWith=request.user.friend.get()) & ~Q(friendGroup=self.group))
         context = {
             'group': self.group,
             'events': self.first_page_event,

@@ -19,8 +19,9 @@
                       <h4>{{user.username}}</h4>
                       <p class="text-secondary mb-1">{{friend.description}}</p>
                       <p class="text-muted font-size-sm">{{friend.address}}</p>
-                      <button class="btn btn-primary">Follow</button>
-                      <a href="{% url 'calendar' request.user %}"><button class="btn btn-outline-primary">Calendar</button></a>
+                      <div id="friend-request">
+                      {% include "ajax_render/friend_request.html" %}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -50,6 +51,54 @@
                 
                 {% endfor %}
                 </div>
+                {% if request.user == user %}
+                  <div class="card-header">Notifications</div>
+                  <div class="accordion" id="accordionExample">
+                    
+                      {% if friend_request_set %}
+                      <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading--1">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse--1" aria-expanded="false" aria-controls="collapse--1">
+                          Friend Requests
+                        </button>
+                        </h2>
+                        <div id="collapse--1" class="accordion-collapse collapse" aria-labelledby="heading--1" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                            <ul class="list-group list-group-flush">
+                            {% for friend_request in friend_request_set %}
+                                <li class="list-group-item">
+                                <a href="{% url 'profile' friend_request.sender.user %}">{{friend_request.sender}}</a><button class="btn btn-success ml-2 float-right" onclick=accept_request({{friend_request.id}})>Accept</button>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                            </div>
+                        </div>
+                        </div>       
+                      {% endif %}
+
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading--2">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse--2" aria-expanded="false" aria-controls="collapse--2">
+                          Group Invitations
+                        </button>
+                        </h2>
+                        <div id="collapse--2" class="accordion-collapse collapse" aria-labelledby="heading--2" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                            <ul class="list-group list-group-flush">
+                            {% for friend in group.friend_set.all %}
+                                <li class="list-group-item">
+                                <a href="{% url 'profile' friend.user.username %}" class="text-decoration-none">{{friend}}</a>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                {% else %}
+                {% endif %}
+
               </div>
             </div>
             <div class="col-md-8">
@@ -158,13 +207,22 @@
                   </div>
                 </div>
               </div>
-
-
-
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex flex-column align-items-center text-center">
+                    <div class="mt-3">
+                      <h4>Friends</h4>
+                      <ul class="list-group" id="allfriend-list">
+                      {% for user_friend in friend.friendWith.all %}
+                        <li class="list-group-item" id="friend-{{user_friend.user.id}}"><a href="{% url 'profile' user_friend.user %}">{{user_friend.user.username}}</a> {% if request.user == user %}<button onclick=remove_friend({{user_friend.user.id}}) class="btn btn-danger">Remove friend</button>{% endif %}</li>
+                      {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-        </div>
     </div>
 
 {% endblock body %}
@@ -185,6 +243,54 @@ function vote(u_id, e_id, status){
             }
         });
     }
+
+function add_friend(){
+        $.ajax({
+            url: "{% url 'add_friend' %}",
+            type: "GET",
+            data: {'receiver_id': {{friend.id}},'sender_id':{{request.user.friend.get.id}}},
+            success: function (data) {
+                document.getElementById('friend-request').innerHTML = data;
+            }
+        });
+    }
+
+function cancel_request(request_id){
+        $.ajax({
+            url: "{% url 'cancel_request' %}",
+            type: "GET",
+            data: {'request_id': request_id,'friend_id':{{friend.id}}},
+            success: function (data) {
+                document.getElementById('friend-request').innerHTML = data;
+            }
+        });
+    }
+
+
+function accept_request(request_id){
+        $.ajax({
+            url: "{% url 'accept_friend' %}",
+            type: "GET",
+            data: {'request_id': request_id,'friend_id':{{friend.id}}},
+            success: function (data) {
+                document.getElementById('friend-request').innerHTML = data;
+                // TODO
+            }
+        });
+    }
+
+{% comment %} function remove_friend(friend_id){
+        $.ajax({
+            url: "{% url 'accept_friend' %}",
+            type: "GET",
+            data: {'request_id': request_id,'friend_id':{{friend.id}}},
+            success: function (data) {
+                document.getElementById('friend-request').innerHTML = data;
+                // TODO
+            }
+        });
+    } {% endcomment %}
+
 </script>
 
 {% endblock extra_script %}

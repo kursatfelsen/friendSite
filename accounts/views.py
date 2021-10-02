@@ -1,8 +1,10 @@
+from django.db.models.query_utils import Q
 from core.forms import CalendarForm
 from accounts.forms import UserProfileForm
 
-from core.models import Event, Friend
+from core.models import Event, Friend, FriendRequest
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -114,13 +116,23 @@ class ProfileView(CustomLoginRequiredMixin, View):
     """Profile view for everyone."""
 
     def render(self, request):
+        friend_set = self.friend.friendWith.all()
+        friend_request_set = FriendRequest.objects.filter(receiver = request.user.friend.get())
         context = {
             'user': self.user,
             'friend': self.friend,
             'groups': self.friendgroups,
             'events_as_creator': self.events_as_creator,
-            'events_as_attender': self.events_as_attender
+            'events_as_attender': self.events_as_attender,
+            'friend_set': friend_set,
+            'friend_request_set': friend_request_set
         }
+        try:
+            friend_request = FriendRequest.objects.get(
+                Q(receiver__id=self.friend.id) & Q(sender__id=request.user.friend.get().id))
+            context["friend_request"] = friend_request
+        except:
+            pass
         return render(request, 'profile.html', context)
 
     def get(self, request, username):
@@ -137,19 +149,21 @@ class ProfileView(CustomLoginRequiredMixin, View):
 
 
 """For future calendarview purposes"""
-class CalendarView(CustomLoginRequiredMixin, View):
-    def render(self,request):
-        return render(request,'calendar.html',self.context)
 
-    def get(self,request, username):
+
+class CalendarView(CustomLoginRequiredMixin, View):
+    def render(self, request):
+        return render(request, 'calendar.html', self.context)
+
+    def get(self, request, username):
         self.user = User.objects.get(username=username)
         if request.user.username == self.user.username:
             form = CalendarForm()
             self.context = {
-                'events' : Event.objects.filter(attender = request.user.friend.get()),
-                'form' : form,
+                'events': Event.objects.filter(attender=request.user.friend.get()),
+                'form': form,
             }
-            
+
             return self.render(request)
         messages.error(request, "You have no access to that area.")
         return redirect('home')
@@ -168,3 +182,39 @@ class ValidateUserNameAjax(View):
         if data['is_taken']:
             data['error_message'] = 'A user with this username already exists.'
         return JsonResponse(data)
+
+
+class SendFriendRequestAjax(View):
+
+    def get(self, request):
+        receiver_id = request.GET.get('receiver_id')
+        sender_id = request.GET.get('sender_id')
+        receiver = Friend.objects.get(id=receiver_id)
+        friend_request = FriendRequest.objects.create(
+            receiver=receiver, sender=Friend.objects.get(id=sender_id))
+        return render(request, 'ajax_render/friend_request.html', {'friend_request': friend_request, 'friend': receiver})
+
+
+class CancelRequestAjax(View):
+
+    def get(self, request):
+        request_id = request.GET.get('request_id')
+        friend_id = request.GET.get('friend_id')
+        try:
+            FriendRequest.objects.get(id=request_id).delete()
+        except ObjectDoesNotExist:
+            pass
+        return render(request, 'ajax_render/friend_request.html', {'friend': Friend.objects.get(id=friend_id)})
+
+
+
+class AcceptFriendAjax(View):
+    
+    def get(self, request):
+        request_id = request.GET.get('request_id')
+        friend_id = request.GET.get('friend_id')
+        friend_request = FriendRequest.objects.get(id=request_id)
+        friend = Friend.objects.get(id=friend_id)
+        friend.friendWith.add(friend_request.sender)
+        friend_request.delete()
+        return render(request, 'ajax_render/friend_request.html', {'friend': Friend.objects.get(id=request.user.friend.get().id)})

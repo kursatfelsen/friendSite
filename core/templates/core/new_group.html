@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load static %}
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block body %}
+<div class="col-6">
+<form action="{% url 'new_group' %}" method="POST">
+    {% for error in form.non_field_errors %}
+        <div class="alert alert-warning" role="alert">{{ error }}</div>
+    {% endfor %}
+    {% csrf_token %}
+    {% for field in form.visible_fields %}
+        <div class="form-group">
+        {{ field.label }}
+        {{ field.errors }}
+        {% if field.name == "is_private" %}
+        {{ field|add_class:'checkbox-inline' }}
+        {% else %}
+        {{ field|add_class:'form-control' }}
+        {% endif %}
+        {% if field.help_text %}
+            <p class="help_text">{{ field.help_text }}</p>
+        {% endif %}
+        </div>
+    {% endfor %}
+    {% for field in form.hidden_fields %}
+        {{ field }}
+    {% endfor %}  
+
+<button class="btn btn-success"> Create a new group!</button>
+</form>
+</div>
+{% endblock body %}
+
+
+{% block extra_script %}
+
+{% endblock %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 {% load static %}
 {% block extra_head %}
 <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
@@ -17,7 +18,7 @@
         <div class="form-group">
         {{ field.label }}
         {{ field.errors }}
-        {{ field }}
+        {{ field|add_class:'form-control' }}
         {% if field.help_text %}
             <p class="help_text">{{ field.help_text }}</p>
         {% endif %}

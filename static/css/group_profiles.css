@@ -14,7 +14,7 @@
         border-radius: 15px 15px 0 0;
         margin: 0 auto;
         padding: 30px 30px 0 30px;
-        background-color: #3f43fd;
+        background-color: #070a57;
         overflow: hidden;
     }
     .single_advisor_profile .advisor_thumb::after {
@@ -73,7 +73,7 @@
         z-index: 1;
         width: 50px;
         height: 3px;
-        background-color: #3f43fd;
+        background-color: #070a57;
         content: "";
         top: 12px;
         right: 30px;
@@ -82,6 +82,7 @@
         margin-bottom: 0.25rem;
         -webkit-transition-duration: 500ms;
         transition-duration: 500ms;
+        color:#070a57;
     }
     @media only screen and (min-width: 768px) and (max-width: 991px) {
         .single_advisor_profile .single_advisor_details_info h6 {
@@ -93,6 +94,7 @@
         transition-duration: 500ms;
         margin-bottom: 0;
         font-size: 14px;
+        color: #070a57;
     }
     @media only screen and (min-width: 768px) and (max-width: 991px) {
         .single_advisor_profile .single_advisor_details_info p {
@@ -105,13 +107,13 @@
     }
     .single_advisor_profile:hover .advisor_thumb .social-info a,
     .single_advisor_profile:focus .advisor_thumb .social-info a {
-        color: #ffffff;
+        color: white;
     }
     .single_advisor_profile:hover .advisor_thumb .social-info a:hover,
     .single_advisor_profile:hover .advisor_thumb .social-info a:focus,
     .single_advisor_profile:focus .advisor_thumb .social-info a:hover,
     .single_advisor_profile:focus .advisor_thumb .social-info a:focus {
-        color: #ffffff;
+        color: white;
     }
     .single_advisor_profile:hover .single_advisor_details_info,
     .single_advisor_profile:focus .single_advisor_details_info {
@@ -129,4 +131,114 @@
     .single_advisor_profile:focus .single_advisor_details_info p {
         color: #ffffff;
     }
+    .page-link{
+        color: #070a57!important;
+    }
+    #create-event-button {
+        background-color:#070a57;
+        color:white;
+    }
+    #create-event-button:hover {
+        background-color:white;
+        color:#070a57!important;
+        border-color: #070a57;
+    }
+    [name = edit-event-button]{
+        background-color:#070a57;
+        color:white;
+    }
+    [name = edit-event-button]:hover{
+        background-color:white;
+        color:#070a57;
+        border-color: #070a57;
+    }
+    [name = delete-event-button]{
+        background-color:#AC3B61;
+        color:white;
+    }
+    [name = delete-event-button]:hover{
+        background-color:white;
+        color:#AC3B61;
+        border-color:#AC3B61;
+    }
+    [name = dismiss-button]{
+        background-color:#AC3B61;
+        color:white;
+    }
+    [name = dismiss-button]:hover{
+        background-color:white;
+        color:#AC3B61;
+        border-color:#AC3B61;
+    }
+    .card{
+        color:#070a57;
+    }
+    #new-user-select-button{
+        background-color:#070a57;
+        color:white;
+    }
+    #new-user-select-button:hover{
+        background-color:white;
+        color:#070a57;
+        border-color:#070a57;
+    }
+    [name="danger-button"]:hover{
+        background-color:white;
+        color:#AC3B61;
+        border-color:#AC3B61;
+    }
+    [name="danger-button"]{
+        background-color:#AC3B61;
+        color:white;
+    }
+    [name="yeah-button"]{
+        background-color:#5cb85c;
+        color:white;
+    }
+    [name="yeah-button"]:hover{
+        background-color:white;
+        color:#5cb85c;
+        border-color:#5cb85c;
+    }
+    [name="no-button"]{
+        background-color:gray;
+        color:white;
+    }
+    [name="no-button"]:hover{
+        background-color:white;
+        color:gray;
+        border-color:gray;
+    }
+    [name="plan-button"]{
+        background-color:#f0ad4e;
+        color:white;
+    }
+    [name="plan-button"]:hover{
+        background-color:white;
+        color:#f0ad4e;
+        border-color:#f0ad4e;
+    }
+    h1.effect-underline:after {
+        content: '';
+        position: absolute;
+        left: 4rem;
+        display: inline-block;
+        height: 1em;
+        width: 80%;
+        border-bottom: 3px solid;
+        margin-top: 20px;
+        opacity: 0;
+        -webkit-transition: opacity 0.35s, -webkit-transform 0.35s;
+        transition: opacity 0.35s, transform 0.35s;
+        -webkit-transform: scale(0,1);
+        transform: scale(0,1);
+    }
     
+    h1.effect-underline:hover:after {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    a{
+        color:#070a57;
+    }

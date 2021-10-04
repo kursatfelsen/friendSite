@@ -20,7 +20,7 @@
                       <p class="text-secondary mb-1">{{friend.description}}</p>
                       <p class="text-muted font-size-sm">{{friend.address}}</p>
                       <div id="friend-request">
-                      {% include "ajax_render/friend_request.html" %}
+                      {% include "accounts/ajax_render/friend_request.html" %}
                       </div>
                     </div>
                   </div>
@@ -168,7 +168,7 @@
                                 <tr class="table-{% if event.state == 'P1' %}warning{% else %}success{% endif %}">
                                     <td><a href="{% url 'event_detail' event.id %}" class="text-decoration-none">{{event}}</a></td>
                                     {% if request.user == user  %}
-                                        <td><a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right">Delete</button></a></td>
+                                        <td><a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right" name="danger-button">Delete</button></a></td>
                                     {% else %}
                                         <td></td>
                                     {% endif %}
@@ -195,7 +195,7 @@
                                 <tr class="table-{% if event.state == 'P1' %}warning{% else %}success{% endif %}" id="table-tr-{{event.id}}">
                                     <td><a href="{% url 'event_detail' event.id %}">{{event}}</a></td>
                                     {% if event.state == 'P1' and request.user == user %}
-                                        <td><button onclick=vote({{user.id}},{{event.id}},2) class="btn btn-danger float-right">Cancel Vote</button></td>
+                                        <td><button onclick=vote({{user.id}},{{event.id}},2) class="btn btn-danger float-right" name="danger-button">Cancel Vote</button></td>
                                     {% else %}
                                         <td></td>
                                     {% endif %}
@@ -214,7 +214,7 @@
                       <h4>Friends</h4>
                       <ul class="list-group" id="allfriend-list">
                       {% for user_friend in friend.friendWith.all %}
-                        <li class="list-group-item" id="friend-{{user_friend.user.id}}"><a href="{% url 'profile' user_friend.user %}">{{user_friend.user.username}}</a> {% if request.user == user %}<button onclick=remove_friend({{user_friend.user.id}}) class="btn btn-danger">Remove friend</button>{% endif %}</li>
+                        <li class="list-group-item" id="friend-{{user_friend.user.id}}"><a href="{% url 'profile' user_friend.user %}">{{user_friend.user.username}}</a> {% if request.user == user %}<button onclick=remove_friend({{user_friend.user.id}}) class="btn btn-danger" name="danger-button">Remove friend</button>{% endif %}</li>
                       {% endfor %}
                       </ul>
                     </div>

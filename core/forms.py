@@ -2,22 +2,12 @@ import datetime
 
 from django import forms
 
-from django.forms.widgets import TimeInput
+from django.forms.widgets import DateTimeInput
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 
 from .models import Calendar, Event, FriendGroup, Location
-
-
-
-class DateInput(forms.DateInput):
-    input_type = 'date'
-
-
-class TimeInput(forms.TimeInput):
-    input_type = 'time'
-
 
 class NewEventForm(forms.ModelForm):
     class Meta:
@@ -25,24 +15,22 @@ class NewEventForm(forms.ModelForm):
         fields = [
             'name',
             'start_date',
-            'start_time',
             'end_date',
-            'end_time',
             'location',
             'group',
             'creator',
         ]
         widgets = {
-            'start_date': DateInput(attrs={
-                'min': datetime.date.today(),
-                'max': datetime.date.today() + datetime.timedelta(days=3650)
+            'start_date': DateTimeInput(attrs={
+                'min': datetime.datetime.now(),
+                'max': datetime.datetime.now() + datetime.timedelta(days=3650),
+                'type': 'datetime-local'
             }),
-            'end_date': DateInput(attrs={
-                'min': datetime.date.today(),
-                'max': datetime.date.today() + datetime.timedelta(days=3650)
+            'end_date': DateTimeInput(attrs={
+                'min': datetime.datetime.now(),
+                'max': datetime.datetime.now() + datetime.timedelta(days=3650),
+                'type': 'datetime-local'
             }),
-            'start_time': TimeInput(),
-            'end_time': TimeInput(),
             'location': forms.HiddenInput(attrs={
                 'id': 'place_id',
             }),
@@ -60,8 +48,6 @@ class NewEventForm(forms.ModelForm):
         #Protection against old date input
         if cleaned_data['start_date'] > cleaned_data['end_date']:
             raise ValidationError('End date must be later than start date.')
-        if cleaned_data['start_date'] < datetime.datetime.now().date():
-            raise ValidationError('Start date must be later than now.')
 
 
 class NewGroupForm(forms.ModelForm):
@@ -72,7 +58,8 @@ class NewGroupForm(forms.ModelForm):
             'creator': forms.TextInput(attrs={ #This field is not for taking input, just for giving info to user
                 'readonly': "readonly",
                 'id':'creator',
-            })}
+            }),
+            }
 
 
 class LocationForm(forms.ModelForm):

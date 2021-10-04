@@ -5,6 +5,8 @@ from accounts.forms import UserProfileForm
 from core.models import Event, Friend, FriendRequest
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -14,6 +16,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
+
 
 
 class CustomLoginRequiredMixin(LoginRequiredMixin):
@@ -37,7 +40,7 @@ class SignupView(View):
     """Signup view. Uses UserCrationForm and validates with also ajax in username field. New users should be added as friend too."""
 
     def render(self, request):
-        return render(request, 'signup.html', {'form': self.form})
+        return render(request, 'accounts/signup.html', {'form': self.form})
 
     def get(self, request, *args, **kwargs):
         self.form = UserCreationForm()
@@ -63,7 +66,7 @@ class LoginView(View):
     """Login view."""
 
     def render(self, request):
-        return render(request, 'login.html')
+        return render(request, 'accounts/login.html')
 
     def get(self, request):
         return self.render(request)
@@ -98,7 +101,7 @@ class SettingsView(CustomLoginRequiredMixin, View):
     """ Settings view for only to user for editing the account."""
 
     def render(self, request):
-        return render(request, 'settings.html', {'user': self.user, 'friend': self.friend, 'form': self.form, 'groups': self.friendgroups})
+        return render(request, 'accounts/settings.html', {'user': self.user, 'friend': self.friend, 'form': self.form, 'groups': self.friendgroups})
 
     def get(self, request, username):
         self.user = User.objects.get(username=username)
@@ -133,7 +136,7 @@ class ProfileView(CustomLoginRequiredMixin, View):
             context["friend_request"] = friend_request
         except:
             pass
-        return render(request, 'profile.html', context)
+        return render(request, 'accounts/profile.html', context)
 
     def get(self, request, username):
         self.user = User.objects.get(username=username)
@@ -190,9 +193,17 @@ class SendFriendRequestAjax(View):
         receiver_id = request.GET.get('receiver_id')
         sender_id = request.GET.get('sender_id')
         receiver = Friend.objects.get(id=receiver_id)
+        sender=Friend.objects.get(id=sender_id)
         friend_request = FriendRequest.objects.create(
-            receiver=receiver, sender=Friend.objects.get(id=sender_id))
-        return render(request, 'ajax_render/friend_request.html', {'friend_request': friend_request, 'friend': receiver})
+            receiver=receiver, sender=sender)
+        send_mail(
+            'Friend Request',#Subject
+            f'{sender} sent you a friend request.Click to see it! http://127.0.0.1:8000/account/profile/{receiver.user.username}', #Message
+            'kursat002@gmail.com', #from
+            [receiver.user.email], #to
+            fail_silently=False,
+        )
+        return render(request, 'accounts/ajax_render/friend_request.html', {'friend_request': friend_request, 'friend': receiver})
 
 
 class CancelRequestAjax(View):
@@ -204,7 +215,7 @@ class CancelRequestAjax(View):
             FriendRequest.objects.get(id=request_id).delete()
         except ObjectDoesNotExist:
             pass
-        return render(request, 'ajax_render/friend_request.html', {'friend': Friend.objects.get(id=friend_id)})
+        return render(request, 'accounts/ajax_render/friend_request.html', {'friend': Friend.objects.get(id=friend_id)})
 
 
 
@@ -217,4 +228,4 @@ class AcceptFriendAjax(View):
         friend = Friend.objects.get(id=friend_id)
         friend.friendWith.add(friend_request.sender)
         friend_request.delete()
-        return render(request, 'ajax_render/friend_request.html', {'friend': Friend.objects.get(id=request.user.friend.get().id)})
+        return render(request, 'accounts/ajax_render/friend_request.html', {'friend': Friend.objects.get(id=request.user.friend.get().id)})

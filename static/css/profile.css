@@ -2,10 +2,13 @@
     margin-top:20px;
     color: #1a202c;
     text-align: left;
-    background-color: #e2e8f0;    
+    background-color: #EEE2DC;   
+    opacity: 0.9;
+    border-radius: .3rem;
 }
 .main-body {
     padding: 15px;
+    background-color: #EEE2DC!important;
 }
 .card {
     box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px 0 rgba(0,0,0,.06);
@@ -21,6 +24,7 @@
     background-clip: border-box;
     border: 0 solid rgba(0,0,0,.125);
     border-radius: .25rem;
+    color:#070a57;
 }
 
 .card-body {
@@ -50,4 +54,16 @@
 }
 .shadow-none {
     box-shadow: none!important;
+}
+
+a {
+    color: #070a57!important;
+}
+[name="danger-button"]:hover{
+    background-color:white;
+    color:#AC3B61;
+}
+[name="danger-button"]{
+    background-color:#AC3B61;
+    color:white;
 }

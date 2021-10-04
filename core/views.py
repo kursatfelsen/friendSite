@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.signing import Signer
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http.response import JsonResponse
@@ -16,7 +17,7 @@ class HomePageView(View):
     """Web Site's homepage. Friend groups are shown if user is logged in and have groups."""
 
     def render(self, request):
-        return render(request, 'home.html', {'groups': self.groups})
+        return render(request, 'core/home.html', {'groups': self.groups})
 
     def get(self, request):
         if request.user.is_authenticated:
@@ -43,7 +44,7 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
             'page': self.first_page,
             'page_list_event': self.page_list_event,
         }
-        return render(request, 'detail.html', context)
+        return render(request, 'core/detail.html', context)
 
     def get(self, request, group_id):
         try:
@@ -91,7 +92,7 @@ class GroupCreateView(CustomLoginRequiredMixin, View):
     def get(self, request):
         self.form = NewGroupForm(
             initial={'creator': request.user.username})
-        return render(request, 'new_group.html', context={'form': self.form})
+        return render(request, 'core/new_group.html', context={'form': self.form})
 
     def post(self, request):
         formData =  request.POST.copy()
@@ -116,7 +117,7 @@ class GroupEditView(CustomLoginRequiredMixin, View):
             'form': self.form,
             'group': self.group,
         }
-        return render(request, 'edit_detail.html', context)
+        return render(request, 'core/edit_detail.html', context)
 
     def get(self, request, group_id):
         self.group = FriendGroup.objects.get(id=group_id)
@@ -144,7 +145,7 @@ class NewEventView(CustomLoginRequiredMixin, View):
     """ Event creation view."""
 
     def render(self, request):
-        return render(request, 'new_event.html', {'form': self.form})
+        return render(request, 'core/new_event.html', {'form': self.form})
 
     def get(self, request, group_id):
         friend = request.user.friend.get()
@@ -171,7 +172,7 @@ class EventDetailView(CustomLoginRequiredMixin, View):
     """Event detail view. Event location and attenders will be rendered for view."""
 
     def render(self, request):
-        return render(request, 'event_detail.html', {'event': self.event})
+        return render(request, 'core/event_detail.html', {'event': self.event})
 
     def get(self, request, event_id):
         self.event = Event.objects.get(id=event_id)
@@ -188,7 +189,7 @@ class EventEditView(CustomLoginRequiredMixin, View):
             'event': self.event,
             'location_address': self.location_address,
         }
-        return render(request, 'edit_event.html', context)
+        return render(request, 'core/edit_event.html', context)
 
     def get(self, request, event_id):
         self.event = Event.objects.get(id=event_id)
@@ -212,7 +213,7 @@ class EventDeleteView(CustomLoginRequiredMixin, View):
     """Event delete view."""
 
     def render(self, request):
-        return render(request, 'delete_event.html', {'event': self.event})
+        return render(request, 'core/delete_event.html', {'event': self.event})
 
     def get(self, request, event_id):
         self.event = Event.objects.get(id=event_id)
@@ -340,7 +341,7 @@ class UserPaginateAjax(View):
         ending_number = page*4
         friends = list(Friend.objects.filter(friendGroup__id=group)[
             starting_number:ending_number])
-        return render(request, 'ajax_render/user_pagination.html', {'page': friends})
+        return render(request, 'core/ajax_render/user_pagination.html', {'page': friends})
 
 
 # eventpaginate/
@@ -354,7 +355,7 @@ class EventPaginateAjax(View):
         ending_number = page*3
         events = list(Event.objects.filter(group__id=group)[
             starting_number:ending_number])
-        return render(request, 'ajax_render/event_pagination.html', {'events': events})
+        return render(request, 'core/ajax_render/event_pagination.html', {'events': events})
 
 
 # submit/
@@ -364,7 +365,7 @@ class SubmitEventFormAjax(View):
     def post(self, request):
         form = NewEventForm(request.POST)
         if form.is_valid():
-            
             event = form.save()
             form_location = LocationForm()
-            return render(request,'ajax_render/map_form.html',context={'form_location':form_location,'event_id':event.id})
+            return render(request,'core/ajax_render/map_form.html',context={'form_location':form_location,'event_id':event.id})
+

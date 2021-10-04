@@ -3,19 +3,10 @@
 {% block extra_head %}
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="{% static 'css/group_profiles.css' %}">
+
 {% endblock extra_head %}
 
 {% block body %}
-    <section class="jumbotron text-center">
-        <div class="container">
-          <h1 class="jumbotron-heading">Welcome to {{group.name}}'s group page!</h1>
-          <p class="lead text-muted">You can see your friend group area and arrange new events here!</p>
-          <p>
-            <a href="{% url 'new_event_get' group.id %}" class="btn btn-primary my-2">Create a new event</a>
-            <a href="#" class="btn btn-secondary my-2">Edit an event</a>
-          </p>
-        </div>
-    </section>
     <div class="container">
         <div class="row">
             <div class="container">
@@ -23,13 +14,15 @@
                     <div class="col-12 col-sm-8 col-lg-6">
                     <!-- Section Heading-->
                     <div class="section_heading text-center wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
-                        <h3>Friends in the group</h3>
+                        
+                        <h1 class="effect-underline">Friends in the group</h1>
+                        <br>
                         <div class="line"></div>
                     </div>
                     </div>
                 </div>
                 <div class="row" id="friend-list">
-                    {% include 'ajax_render/user_pagination.html' %}
+                    {% include 'core/ajax_render/user_pagination.html' %}
                     
                     <!-- Single Advisor-->
                 </div>
@@ -41,16 +34,17 @@
                     </ul>
                 </nav>
             </div>
+            <a href="{% url 'new_event_get' group.id %}" class="btn mb-5 mx-auto col-12 col-sm-4"id="create-event-button">Create a new event</a>
         </div>
     </div>
         <div class="row">
             <div class="col-md">
-                <div class="card border-primary mb-3" style="width: 36rem;">
+                <div class="card shadow p-3 mb-3" style="width: 36rem;">
                     <div class="card-header">
                         Events in this group
                     </div>
                     <ul class="list-group list-group-flush " id="events-all">
-                    {% include 'ajax_render/event_pagination.html' %}
+                    {% include 'core/ajax_render/event_pagination.html' %}
                     </ul>
                 </div>
                 <nav aria-label="..." >
@@ -63,7 +57,7 @@
             </div>
 
             <div class="col-md">
-                <div class="card float-right border-primary mb-3" style="width: 36rem;">
+                <div class="card float-right shadow p-3 mb-3" style="width: 36rem;">
                     <div class="card-header">
                         Dismiss friends
                     </div>
@@ -71,7 +65,7 @@
                     {% for friend in group.get_friends %}
                         {% if friend.user == request.user or group.creator == friend.user %}
                         {% else %}
-                            <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn btn-danger float-right">Dismiss</button></li>
+                            <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn float-right" name="dismiss-button">Dismiss</button></li>
                         {% endif %}
 
                     {% endfor %}
@@ -83,16 +77,13 @@
                             <option value="{{friend.user.id}}" id="new-user-option-{{friend.user.id}}">{{friend.user.username}}</option>
                             {% endfor %}
                         </select>
-                        <button {% if friends|length %}{% else %} style="display:none;"{% endif %} onclick=addUserToGroup() class="btn btn-primary" type="submit" id="new-user-select-button">Add friend</button>
+                        <button {% if friends|length %}{% else %} style="display:none;"{% endif %} onclick=addUserToGroup() class="btn" type="submit" id="new-user-select-button">Add friend</button>
                         <p id ="new-user-select-p"  {% if friends|length %} style="display:none;"{% else %}{% endif %}> There are no friends that you can add.</p>
                     </div>
                 </div>
             </div>
         </div>
         <br>
-        <form method="get" action="{% url 'new_event_get' group.id %}">
-            <button class="btn btn-danger" type="submit" >Create an event!</button>
-        </form>
 {% endblock body %}
 
 {% block extra_script %}
@@ -137,7 +128,7 @@ function addUserToGroup(){
             success: function (data) {
                 if (data.added){
                     u_id = document.getElementById('new-user-select').value;
-                    str = '<li class="list-group-item" id="'+u_id+'">'+data.name+'<button dismiss-user="{% url 'dismiss' %}" onclick="dismiss('+u_id+',' +g_id + ')" class="btn btn-danger float-right">Dismiss</button></li>';
+                    str = '<li class="list-group-item" id="'+u_id+'">'+data.name+'<button dismiss-user="{% url 'dismiss' %}" onclick="dismiss('+u_id+',' +g_id + ')" class="btn float-right" name="dismiss-button">Dismiss</button></li>';
                     
                     document.getElementById('friend-list-add').innerHTML+= str;
                     document.getElementById('new-user-option-'+u_id).remove();

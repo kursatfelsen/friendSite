@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block body %}
+{% if error %}
+{{error}}
+{% else %}
+{{start_time}} - {{end_time}}
+{% endif %}
+
+{% endblock body %}

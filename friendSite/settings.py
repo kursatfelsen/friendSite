@@ -171,3 +171,8 @@ EMAIL_HOST_USER = 'kursat.felsen@gmail.com'
 EMAIL_HOST_PASSWORD = 'bursaistanbulankara'
 
 DEFAULT_FROM_EMAIL = "kursat.felsen@gmail.com"
+
+
+TIME_INPUT_FORMATS = [
+    '%H:%M',        # '14:30'
+]

@@ -22,3 +22,66 @@ a {
     color:white;
     background-color:#123c69;
 }
+[name="danger-button"]:hover{
+    background-color:white;
+    color:#AC3B61;
+    border-color:#AC3B61;
+}
+[name="danger-button"]{
+    background-color:#AC3B61;
+    color:white;
+}
+[name="yeah-button"]{
+    background-color:#5cb85c;
+    color:white;
+}
+[name="yeah-button"]:hover{
+    background-color:white;
+    color:#5cb85c;
+    border-color:#5cb85c;
+}
+[name="no-button"]{
+    background-color:gray;
+    color:white;
+}
+[name="no-button"]:hover{
+    background-color:white;
+    color:gray;
+    border-color:gray;
+}
+[name="plan-button"]{
+    background-color:#f0ad4e;
+    color:white;
+}
+[name="plan-button"]:hover{
+    background-color:white;
+    color:#f0ad4e;
+    border-color:#f0ad4e;
+}
+a [name = edit-event-button]{
+    background-color:#070a57;
+    color:white;
+}
+a [name = edit-event-button]:hover{
+    background-color:white;
+    color:#070a57;
+    border-color: #070a57;
+}
+a [name = delete-event-button]{
+    background-color:#AC3B61;
+    color:white;
+}
+a [name = delete-event-button]:hover{
+    background-color:white;
+    color:#AC3B61;
+    border-color:#AC3B61;
+}
+[name = dismiss-button]{
+    background-color:#AC3B61;
+    color:white;
+}
+[name = dismiss-button]:hover{
+    background-color:white;
+    color:#AC3B61;
+    border-color:#AC3B61;
+}

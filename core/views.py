@@ -1,9 +1,11 @@
+from datetime import datetime,timedelta
 from django.contrib import messages
 from django.core.signing import Signer
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http.response import JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views import View
 
 from accounts.views import CustomLoginRequiredMixin
@@ -95,10 +97,10 @@ class GroupCreateView(CustomLoginRequiredMixin, View):
         return render(request, 'core/new_group.html', context={'form': self.form})
 
     def post(self, request):
-        formData =  request.POST.copy()
+        formData = request.POST.copy()
         formData['creator'] = request.user.id
         self.form = NewGroupForm(formData)
-        
+
         if self.form.is_valid():
             group = self.form.save()
             group.creator = request.user  # Assigning user for security reasons
@@ -159,7 +161,7 @@ class NewEventView(CustomLoginRequiredMixin, View):
         print(self.location_form)
         if self.location_form.is_valid():
             location = self.location_form.save()
-            event = Event.objects.get(id = event_id)
+            event = Event.objects.get(id=event_id)
             event.location = location
             event.save()
             return redirect('home')
@@ -367,5 +369,74 @@ class SubmitEventFormAjax(View):
         if form.is_valid():
             event = form.save()
             form_location = LocationForm()
-            return render(request,'core/ajax_render/map_form.html',context={'form_location':form_location,'event_id':event.id})
+            return render(request, 'core/ajax_render/map_form.html', context={'form_location': form_location, 'event_id': event.id})
 
+
+class TestView(View):
+
+    def get(self,request,group_id,length):
+        friends = Friend.objects.filter(friendGroup__id=group_id)
+        length_for_pause = 1
+        #exclude = [23,7]
+        starting_time_to_try = timezone.now() + timedelta(hours=length_for_pause) + timedelta(hours=3) #Last timedelta is for correcting timezone
+        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+        while(True):
+            flag = False
+            for friend in friends:
+                for attending_event in friend.attending_set.all():
+                    if starting_time_to_try > attending_event.start_date and ending_time_to_try < attending_event.end_date: #engaged time contains the interval in it
+                        flag = True
+                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        break
+                    elif starting_time_to_try < attending_event.start_date and ending_time_to_try > attending_event.end_date: #event contains engaged time
+                        flag = True
+                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        break
+                    elif starting_time_to_try < attending_event.end_date and ending_time_to_try > attending_event.start_date: #event start time is in engaged time
+                        flag = True
+                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        break
+                    elif  starting_time_to_try < attending_event.end_date and ending_time_to_try > attending_event.start_date: #event end time is in engaged time
+                        flag = True
+                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        break
+                if flag:
+                    if starting_time_to_try.hour == 23:
+                        starting_time_to_try += timedelta(hours=8)
+                    elif starting_time_to_try.hour == 6:
+                        starting_time_to_try += timedelta(hours=1)
+                    elif starting_time_to_try.hour == 5:
+                        starting_time_to_try += timedelta(hours=2)
+                    elif starting_time_to_try.hour == 4:
+                        starting_time_to_try += timedelta(hours=3)
+                    elif starting_time_to_try.hour == 3:
+                        starting_time_to_try += timedelta(hours=4)
+                    elif starting_time_to_try.hour == 2:
+                        starting_time_to_try += timedelta(hours=5)
+                    elif starting_time_to_try.hour == 1:
+                        starting_time_to_try += timedelta(hours=6)
+                    elif starting_time_to_try.hour == 0:
+                        starting_time_to_try += timedelta(hours=7)
+                    ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                    break
+            if flag:
+                flag = False
+                if starting_time_to_try > timezone.now() + timedelta(days=30): #Only look for 30 days ahead
+                    print("There is no possible interval.")
+                    context = {
+                        'error':"There is no possible interval in your group schedule."
+                    }
+                    break
+            else:
+                print
+                (f"FOUND IT:{starting_time_to_try}-{ending_time_to_try}")
+                context = {
+                    'start_time': starting_time_to_try,
+                    'end_time': ending_time_to_try,
+                }
+                break
+        return render(request, 'core/event_finder.html', context)

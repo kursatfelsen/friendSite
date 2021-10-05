@@ -34,8 +34,27 @@
                     </ul>
                 </nav>
             </div>
+            <div class="row text-center">
+            <div class="col align-content-center">
             <a href="{% url 'new_event_get' group.id %}" class="btn mb-5 mx-auto col-12 col-sm-4"id="create-event-button">Create a new event</a>
-            <a href="{% url 'test' group.id 1 %}" class="btn mb-5 mx-auto col-12 col-sm-4"id="create-event-button">Find an interval</a>
+            </div>
+            <div class="col align-content-center">
+            <form action="{% url 'test' group.id %}" method="GET">
+                <div class="form-group">
+                <div class="row">
+                <label for="length">Choose length for event</label>
+                </div>
+                <div class="row">
+                <div class="col-16">
+                <input style="background:white" type="range" class="custom-range" min="1" value="1" max="24" id="length" name="length" step="1" oninput="this.nextElementSibling.value = this.value">
+                <output>24</output>
+                </div>
+                </div>
+                </div>
+                <button type="submit" class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Find an interval</button>
+            </form>
+            </div>
+            </div>
         </div>
     </div>
         <div class="row">

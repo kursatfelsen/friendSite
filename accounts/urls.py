@@ -14,4 +14,5 @@ urlpatterns = [
     path('add_friend/',SendFriendRequestAjax.as_view(), name='add_friend'),
     path('cancel_request/',CancelRequestAjax.as_view(), name='cancel_request'),
     path('accept_friend/',AcceptFriendAjax.as_view(), name='accept_friend'),
+    path('remove/',RemoveFriendAjax.as_view(), name='remove_friend'),
 ]

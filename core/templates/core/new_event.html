@@ -9,7 +9,7 @@
 
 {% block body %}
 <div id="div-1">
-<form action="#" id="address-form" method="POST">
+<form action="{% url 'new_event_post' %}" id="address-form" method="POST">
     {% for error in form.non_field_errors %}
         <div class="alert alert-warning" role="alert">{{ error }}</div>
     {% endfor %}
@@ -27,8 +27,10 @@
     {% for field in form.hidden_fields %}
         {{ field }}
     {% endfor %}  
+    <button type="submit" class="btn btn-danger">Create a new event without a location</button>
 </form>
-<button type="submit" onclick=submit_event() class="btn btn-danger">Create a new event</button>
+<button type="submit" onclick=submit_event() class="btn btn-success">Confirm and choose a new location</button>
+
 </div>
 {% endblock body %}
 

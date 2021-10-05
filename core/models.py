@@ -1,5 +1,7 @@
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
@@ -95,15 +97,19 @@ class Calendar(models.Model):
 
         
 class Event(models.Model):
+    class Meta:
+        ordering = ('state','start_date')
     PROPOSED = 'P1'
     PLANNED = 'P2'
     HAPPENING = 'H1'
     HAPPENED = 'H2'
+    NOT_HAPPENED = 'N'
     STATE_CHOICES = [
         (PROPOSED, 'Proposed'),
         (PLANNED, 'Planned'),
         (HAPPENING, 'Happening'),
         (HAPPENED, 'Happened'),
+        (NOT_HAPPENED, 'Not Happened'),
     ]
     name = models.TextField(max_length=50)
     creator = models.ForeignKey(Friend, blank=True, on_delete=models.CASCADE)
@@ -133,6 +139,18 @@ class Event(models.Model):
     def getNas(self):
         return Vote.objects.filter(event__id=self.id, status=False).count()
 
+    def determineState(self):
+        if self.state == 'P2':
+            if timezone.now() > self.start_date and timezone.now() < self.end_date:
+                self.state = 'H1'
+            elif timezone.now() > self.end_date:
+                self.state = 'H2'
+        elif self.state == 'P1':
+            if timezone.now() > self.start_date:
+                self.state = 'N'
+        self.save()
+
+
 
 class Vote(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
@@ -144,9 +162,19 @@ class Vote(models.Model):
 
 
 class FriendRequest(models.Model):
-    sender = models.ForeignKey(Friend,on_delete=models.DO_NOTHING,related_name='sent_request')
-    receiver = models.ForeignKey(Friend,on_delete=models.DO_NOTHING,related_name='received_request')
+    sender = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='sent_request')
+    receiver = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='received_request')
     status = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.sender}'s request to {self.receiver}: {self.status}"
+        return f"{self.sender}'s friend request to {self.receiver}: {self.status}"
+
+
+class GroupInvitation(models.Model):
+    sender = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='sent_invitation')
+    receiver = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='received_invitation')
+    group = models.ForeignKey(FriendGroup,on_delete=models.CASCADE,related_name='invitation_group')
+    status = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.sender}'s group invitation to {self.receiver}: {self.status}"

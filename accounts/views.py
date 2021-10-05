@@ -229,3 +229,12 @@ class AcceptFriendAjax(View):
         friend.friendWith.add(friend_request.sender)
         friend_request.delete()
         return render(request, 'accounts/ajax_render/friend_request.html', {'friend': Friend.objects.get(id=request.user.friend.get().id)})
+
+
+class RemoveFriendAjax(View):
+
+    def get(self, request):
+        friend_id = request.GET.get('friend_id')
+        request.user.friend.get().remove_friend(friend_id)
+        data = {}
+        return JsonResponse(data)

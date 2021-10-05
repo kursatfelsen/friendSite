@@ -27,5 +27,5 @@ urlpatterns = [
     path('eventpaginate/',EventPaginateAjax.as_view(),name='paginate_event'),
     path('submit/',SubmitEventFormAjax.as_view(), name='submit_event'),
 
-    path('test/<int:group_id>/<int:length>',TestView.as_view(), name='test')
+    path('test/<int:group_id>/',TestView.as_view(), name='test')
 ]

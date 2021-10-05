@@ -5,7 +5,7 @@
 {% endblock extra_head %}
 
 {% block body %}
-<div class="col-6">
+<div class="container col-6">
 <form action="{% url 'new_group' %}" method="POST">
     {% for error in form.non_field_errors %}
         <div class="alert alert-warning" role="alert">{{ error }}</div>

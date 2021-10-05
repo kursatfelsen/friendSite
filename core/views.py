@@ -1,7 +1,9 @@
 from datetime import datetime,timedelta
 from django.contrib import messages
+from django.core.mail import send_mail
 from django.core.signing import Signer
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+
 from django.db.models import Q
 from django.http.response import JsonResponse
 from django.shortcuts import redirect, render
@@ -68,6 +70,10 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
         self.first_page = paginator.page(1).object_list
 
         event_objects = Event.objects.filter(group=group_id)
+        #Update events for they are happening or happened
+        for event in event_objects:
+            event.determineState()
+
         paginate_by_event = 3
         paginator_event = Paginator(event_objects, paginate_by_event)
         page_event = request.GET.get('page', paginate_by_event)
@@ -157,14 +163,32 @@ class NewEventView(CustomLoginRequiredMixin, View):
 
     def post(self, request):
         event_id = request.POST.get('event-id')
-        self.location_form = LocationForm(request.POST)
-        print(self.location_form)
-        if self.location_form.is_valid():
-            location = self.location_form.save()
-            event = Event.objects.get(id=event_id)
-            event.location = location
-            event.save()
-            return redirect('home')
+        print(request.POST)
+        if "location_name" in request.POST:
+            self.location_form = LocationForm(request.POST)
+            print(self.location_form)
+            if self.location_form.is_valid():
+                location = self.location_form.save()
+                event = Event.objects.get(id=event_id)
+                event.location = location
+                event.save()
+                email_list = []
+                for friend in event.group.get_friends():
+                    email_list.append(friend.user.email)
+                # send_mail(
+                # 'New Event Created',#Subject
+                # f'{event.creator} created a new event.Click to see it! http://127.0.0.1:8000/detail/{event.group.id}', #Message
+                # 'kursat002@gmail.com', #from
+                # email_list, #to
+                # fail_silently=False,
+                # )
+            return redirect('event_detail',event_id = event.id)
+        elif "start_date" in request.POST:
+            form = NewEventForm(request.POST)
+            if form.is_valid():
+                event = form.save()
+                return redirect('event_detail',event_id = event.id)
+
         return redirect('home')
 
 # event/detail/event_id
@@ -374,7 +398,9 @@ class SubmitEventFormAjax(View):
 
 class TestView(View):
 
-    def get(self,request,group_id,length):
+    def get(self,request,group_id):
+        print(request.GET)
+        length = int(request.GET.get('length'))
         friends = Friend.objects.filter(friendGroup__id=group_id)
         length_for_pause = 1
         #exclude = [23,7]
@@ -404,7 +430,7 @@ class TestView(View):
                         starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
                         ending_time_to_try = starting_time_to_try + timedelta(hours=length)
                         break
-                if flag:
+                if flag: #skip night
                     if starting_time_to_try.hour == 23:
                         starting_time_to_try += timedelta(hours=8)
                     elif starting_time_to_try.hour == 6:

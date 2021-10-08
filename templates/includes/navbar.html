@@ -1,45 +1,48 @@
 {% load static  %}
-<nav id="main-navbar">
-  <div class="collapse" id="navbarHeader" >
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-8 col-md-7 py-4">
-          <h4 >About</h4>
-          <hr class="text-white">
-          <p >This is the friends website. You can communicate with your friends and even make new friends here!</p>
-        </div>
-        <div class="col-sm-4 offset-md-1 py-4">
-            {% if user.is_authenticated %}
-              <h4 >Account</h4>
-              <hr class="text-white">
-              <ul class="list-unstyled">
-                <li><a href="{% url 'profile' user.username %}">Profile</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-              </ul>
-            {% else %}
-              <h4>Account</h4>
-              <hr class="text-white">
-              <ul class="list-unstyled">
-                <li><a href="{% url 'logout' %}">Login</a></li>
-                <li><a href="{% url 'signup' %}">Register</a></li>
-              </ul>
-            {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="navbar navbar-dark  box-shadow" style="background-color:#AC3B61;">
-    <div class="container d-flex justify-content-between">
-      <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center">
-        <img src="{% static 'img/favicon.ico' %}" style="width:2rem" class="mr-2">
-        <strong>Friends</strong>
-      </a>
-      <a href="{% if user.is_authenticated %}{% url 'profile' request.user.username %}{% else %}{% url 'login' %}{% endif %}">
+<nav class="navbar navbar-expand-lg navbar-light bg-dark sticky-top" id="main-navbar">
+  <div class="container-fluid">
+    <img src="{% static 'img/favicon.ico' %}" style="width:2rem" class="mr-2">
+    <a class="navbar-brand" href="{% url 'home' %}">Friends</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Friend Groups
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            {% for group in request.user.friend.get.friendGroup.all %}
+              <li><a class="dropdown-item" href="{% url 'detail' group.id %}" style="color: black!important;">{{group.name}}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'location_list' %}">Locations</a></li>
+        {% endif %}
+      </ul>
+      <a class="mx-auto" style="width: 20rem;" href="{% if user.is_authenticated %}{% url 'profile' request.user.username %}{% else %}{% url 'login' %}{% endif %}">
         {% if request.user.is_authenticated %}Welcome {{request.user.username}}{% else %}Welcome, please login.{% endif %}
       </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <ul class="navbar-nav mb-2 mb-lg-0">
+      {% if user.is_authenticated %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'profile' user.username %}">Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'calendar' user.username %}">Calendar</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+      {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Signup</a></li>
+      {% endif %}
+      </ul>
+      <form class="d-flex" action="{% url 'search' %}" method="GET">
+        <input class="form-control me-2" name="search_word" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+
     </div>
   </div>
 </nav>

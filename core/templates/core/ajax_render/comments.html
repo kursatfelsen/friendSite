@@ -1,0 +1,90 @@
+{% load humanize %}
+{% load core_extras %}
+
+<section class="gradient-custom" id="comment-section">
+  <div class="container my-5 py-5">
+    <div class="row d-flex justify-content-center">
+      <div class="col-md-12 col-lg-10 col-xl-8">
+        <div class="card">
+          <div class="card-body p-4">
+            <h4 class="text-center mb-4 pb-2">Comments</h4>
+
+            <div class="row">
+              <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text">Comment content</span>
+                    <textarea class="form-control" aria-label="With textarea" id="main-comment-content"></textarea>
+                    </div>
+                    <button class="btn btn-danger float-right" onclick=makeComment()>Make a comment</button>
+                    <br><br>
+                {% for comment in comments %}
+                {% if comment.is_inner_comment %}
+                {% else %}
+                
+                <div class="d-flex flex-start mt-4">
+                  <img
+                    class="rounded-circle shadow-1-strong me-3"
+                    src="{{comment.creator.img}}"
+                    alt="avatar"
+                    width="65"
+                    height="65"
+                  />
+                  <div class="flex-grow-1 flex-shrink-1">
+                    <div>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <p class="mb-1">
+                          {{comment.creator}} <span class="small">- {{comment.created_time |naturaltime }}</span>
+                        </p>
+                        <span class="small"><button class="btn btn-primary" onclick=openCommentField({{comment.id}})>reply</button></span>
+
+                        
+                      </div>
+                      <p class="small mb-0">
+                       {{comment.content}}
+                      </p>
+                      <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{comment.id}},true) ><i class="bi bi-arrow-up-circle-fill" style="font-size:1.5rem;{% is_liked comment.id request.user.friend.get.id %}" id ="like-{{comment.id}}" id ="like-{{comment.id}}"></i></button>
+                      <span>{{comment.comment_likes.total_likes}}</span>
+                      <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{comment.id}},false)><i class="bi bi-arrow-down-circle-fill" style="font-size:1.5rem;{% is_disliked comment.id request.user.friend.get.id %}" id ="dislike-{{comment.id}}"></i></button>
+                    </div>
+                    {% for inner_comment in comment.comments.all %}
+                    <div class="d-flex flex-start mt-4">
+                      <a class="me-3" href="#">
+                        <img
+                          class="rounded-circle shadow-1-strong"
+                          src="{{inner_comment.creator.img}}"
+                          alt="avatar"
+                          width="65"
+                          height="65"
+                        />
+                      </a>
+                      <div class="flex-grow-1 flex-shrink-1">
+                        <div>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-1">
+                              {{inner_comment.creator}} <span class="small">- {{inner_comment.created_time |naturaltime }} | </span>
+                            </p>
+                          </div>
+                          <p class="small mb-0">
+                            {{inner_comment.content}}
+                          </p>
+                          <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{inner_comment.id}},true) ><i class="bi bi-arrow-up-circle-fill" style="font-size:1.5rem;{% is_liked inner_comment.id request.user.friend.get.id %}" id ="like-{{comment.id}}" id ="like-{{comment.id}}"></i></button>
+                          <span>{{inner_comment.comment_likes.total_likes}}</span>
+                          <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{inner_comment.id}},false)><i class="bi bi-arrow-down-circle-fill" style="font-size:1.5rem;{% is_disliked inner_comment.id request.user.friend.get.id %}" id ="dislike-{{comment.id}}"></i></button>
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                    <div id="{{comment.id}}-comment-input">
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

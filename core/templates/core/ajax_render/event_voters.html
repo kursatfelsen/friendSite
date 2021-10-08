@@ -1,0 +1,21 @@
+<div class="card border-primary mx-auto " style="width: 30rem;">
+    <div class="card-header">
+    Yeah Voters
+    </div>
+    <ul class="list-group list-group-flush">
+    {% for vote in yeah_votes %}
+    <li class="list-group-item">{{vote.friend.user}}</li>
+    {% endfor %}
+
+</div>
+
+<div class="card border-primary mx-auto " style="width: 30rem;">
+    <div class="card-header">
+    No Voters
+    </div>
+    <ul class="list-group list-group-flush">
+    {% for vote in no_votes %}
+    <li class="list-group-item">{{vote.friend.user}}</li>
+    {% endfor %}
+    </ul>
+</div>

@@ -3,57 +3,70 @@
 {% block extra_head %}
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="{% static 'css/group_profiles.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css" integrity="sha256-uq9PNlMzB+1h01Ij9cx7zeE2OR2pLAfRw3uUUOOPKdA=" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js" integrity="sha256-rPPF6R+AH/Gilj2aC00ZAuB2EKmnEjXlEWx5MkAp7bw=" crossorigin="anonymous"></script>
+
+    <link href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13.1/css/all.css' rel='stylesheet'>
 
 {% endblock extra_head %}
 
 {% block body %}
+<div class="container bg-light" id="profile-main">
+    <div class="main-body">
+        <br>
+
+          <div class="row gutters-sm">
+                <div class="row text-center"><h1>{{group.name}}'s calendar</h1></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div id="calendar" class="d-none d-md-flex col-md-4 col-lg-12 p-3" style="min-height: 35em;"></div>
+                    </div>
+                </div>
+          </div>
+    </div>
+</div>
+
     <div class="container">
         <div class="row">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-sm-8 col-lg-6">
-                    <!-- Section Heading-->
-                    <div class="section_heading text-center wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
-                        
-                        <h1 class="effect-underline">Friends in the group</h1>
-                        <br>
-                        <div class="line"></div>
-                    </div>
-                    </div>
-                </div>
-                <div class="row" id="friend-list">
-                    {% include 'core/ajax_render/user_pagination.html' %}
-                    
-                    <!-- Single Advisor-->
-                </div>
-                <nav aria-label="..." >
-                    <ul class="pagination pagination-sm justify-content-center">
-                        {% for i in page_list %}
-                        <li class="page-item" id="pagination-li-{{i}}"><a class="page-link" onclick=paginate_user({{i}}) >{{i}}</a></li>
-                        {% endfor %}
-                    </ul>
-                </nav>
-            </div>
             <div class="row text-center">
-            <div class="col align-content-center">
-            <a href="{% url 'new_event_get' group.id %}" class="btn mb-5 mx-auto col-12 col-sm-4"id="create-event-button">Create a new event</a>
-            </div>
-            <div class="col align-content-center">
-            <form action="{% url 'test' group.id %}" method="GET">
-                <div class="form-group">
-                <div class="row">
-                <label for="length">Choose length for event</label>
+                <div class="col align-content-center">
+                    <div class="row">
+                    <p>Event accomplishment rate: {{event_accomplishment_rate|floatformat:2}}</p>
+                    </div>
+                    {% if event_accomplishment_rate < 0.4 %}
+                    <div class="row">
+                        <p>Isn't it a bit low? Did you try our event planner?</p>
+                    </div>
+                    {% elif event_accomplishment_rate > 0.7 %}
+                    <div class="row">
+                        <p>Wow, your group should organize NATO meetings!</p>
+                    </div>
+                    {% else %}
+                    <div class="row">
+                        <p>Some organizes, some declines. Like always...</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                    <a href="{% url 'new_event_get' group.id %}" class="btn mb-5 mx-auto col-12 col-sm-4"id="create-event-button">Create a new event</a>
+                    </div>
                 </div>
-                <div class="row">
-                <div class="col-16">
-                <input style="background:white" type="range" class="custom-range" min="1" value="1" max="24" id="length" name="length" step="1" oninput="this.nextElementSibling.value = this.value">
-                <output>24</output>
+                <div class="col align-content-center">
+                    <form action="{% url 'test' group.id %}" method="GET">
+                        <div class="form-group">
+                        <div class="row">
+                        <label for="length">Choose length for event</label>
+                        </div>
+                        <div class="row">
+                        <div class="col-16">
+                        <input style="background:white" type="range" class="custom-range" min="1" value="1" max="24" id="length" name="length" step="1" oninput="this.nextElementSibling.value = this.value">
+                        <output>24</output>
+                        </div>
+                        </div>
+                        </div>
+                        <button type="submit" class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Find an interval</button>
+                    </form>
                 </div>
-                </div>
-                </div>
-                <button type="submit" class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Find an interval</button>
-            </form>
-            </div>
             </div>
         </div>
     </div>
@@ -103,13 +116,61 @@
                 </div>
             </div>
         </div>
+                    <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-sm-8 col-lg-6">
+                    <!-- Section Heading-->
+                    <div class="section_heading text-center wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
+                        
+                        <h1 class="effect-underline">Friends in the group</h1>
+                        <br>
+                        <div class="line"></div>
+                    </div>
+                    </div>
+                </div>
+                <div class="row" id="friend-list">
+                    {% include 'core/ajax_render/user_pagination.html' %}
+                    
+                    <!-- Single Advisor-->
+                </div>
+                <nav aria-label="..." >
+                    <ul class="pagination pagination-sm justify-content-center">
+                        {% for i in page_list %}
+                        <li class="page-item" id="pagination-li-{{i}}"><a class="page-link" onclick=paginate_user({{i}}) >{{i}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
         <br>
 {% endblock body %}
 
 {% block extra_script %}
 
-
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        themeSystem: 'bootstrap',
+        locale: 'en',
+        firstDay: 1,
+        height: '100',
+        initialView: 'dayGridMonth',
+        fixedWeekCount: false,
+        events:[
+        {% for i in all_events %}
+        {
+            title: "{{ i.name}}",
+            start: '{{ i.start_date|date:"Y-m-d" }}',
+            end: '{{ i.end_date|date:"Y-m-d" }}',
+            url: '{% url 'event_detail' i.id %}',
+
+        },
+        {% endfor %}
+
+    ]
+    });
+    calendar.render();
+});
 
 function dismiss(u_id, g_id){
         $.ajax({

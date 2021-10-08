@@ -1,8 +1,9 @@
+from django.db.models.aggregates import Count
 from django.db.models.query_utils import Q
 from core.forms import CalendarForm
 from accounts.forms import UserProfileForm
 
-from core.models import Event, Friend, FriendRequest
+from core.models import BadgeFriendRelationship, Event, Friend, FriendRequest
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
@@ -16,7 +17,6 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
-
 
 
 class CustomLoginRequiredMixin(LoginRequiredMixin):
@@ -120,7 +120,19 @@ class ProfileView(CustomLoginRequiredMixin, View):
 
     def render(self, request):
         friend_set = self.friend.friendWith.all()
-        friend_request_set = FriendRequest.objects.filter(receiver = request.user.friend.get())
+        friend_request_set = FriendRequest.objects.filter(
+            receiver=request.user.friend.get())
+
+        attended_events = Event.objects.filter(
+            Q(state="H2") & Q(attender=self.friend))
+        most_visited_event_locations = attended_events.values(
+            'location', 'location__name', 'location__id').annotate(lcount=Count('location')).order_by('-lcount')
+        # most_visited_event_locations = attended_events.annotate(num_locations=Count(
+        #     'location')).order_by('num_locations')[:5].values('location__name','location__id','num_locations')  # Most visited locations
+        #most_same_event_with_friend = attended_events.annotate(num_attenders=Count('attender')).order_by('num_attenders')[:5].values('attender__user__username')
+        badges = BadgeFriendRelationship.objects.filter(
+            owner=self.friend).values('badge__name')
+
         context = {
             'user': self.user,
             'friend': self.friend,
@@ -128,7 +140,9 @@ class ProfileView(CustomLoginRequiredMixin, View):
             'events_as_creator': self.events_as_creator,
             'events_as_attender': self.events_as_attender,
             'friend_set': friend_set,
-            'friend_request_set': friend_request_set
+            'friend_request_set': friend_request_set,
+            'most_visited_event_locations': most_visited_event_locations,
+            'badges': badges,
         }
         try:
             friend_request = FriendRequest.objects.get(
@@ -193,14 +207,14 @@ class SendFriendRequestAjax(View):
         receiver_id = request.GET.get('receiver_id')
         sender_id = request.GET.get('sender_id')
         receiver = Friend.objects.get(id=receiver_id)
-        sender=Friend.objects.get(id=sender_id)
+        sender = Friend.objects.get(id=sender_id)
         friend_request = FriendRequest.objects.create(
             receiver=receiver, sender=sender)
         send_mail(
-            'Friend Request',#Subject
-            f'{sender} sent you a friend request.Click to see it! http://127.0.0.1:8000/account/profile/{receiver.user.username}', #Message
-            'kursat002@gmail.com', #from
-            [receiver.user.email], #to
+            'Friend Request',  # Subject
+            f'{sender} sent you a friend request.Click to see it! http://127.0.0.1:8000/account/profile/{receiver.user.username}',  # Message
+            'kursat002@gmail.com',  # from
+            [receiver.user.email],  # to
             fail_silently=False,
         )
         return render(request, 'accounts/ajax_render/friend_request.html', {'friend_request': friend_request, 'friend': receiver})
@@ -218,9 +232,8 @@ class CancelRequestAjax(View):
         return render(request, 'accounts/ajax_render/friend_request.html', {'friend': Friend.objects.get(id=friend_id)})
 
 
-
 class AcceptFriendAjax(View):
-    
+
     def get(self, request):
         request_id = request.GET.get('request_id')
         friend_id = request.GET.get('friend_id')

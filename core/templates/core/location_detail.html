@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block extra_head %}
+
+{% endblock extra_head %}
+{% block body %}
+<h2 class="text-center">Location details</h2>
+<div class="row">
+<a href="{% url 'location_list' %}" class="btn btn-danger mx-auto col-2 my-2">Turn back to all locations</a>
+</div>
+<div class="card mx-auto" style="width: 66rem;">
+  <div class="row">
+    <div class="col">
+        <div class="card-body">
+            <a href="{{location.website}}"><h5 class="card-title">{{location.name}}</h5></a>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Phone: {{location.phone_number}}</li>
+                <li class="list-group-item">Rating: {{location.rating}}</li>
+                <li class="list-group-item">Type: {{location.type}}</li>
+                <li class="list-group-item">{{location.address}}</li>
+            </ul>
+            <a href="#" class="btn btn-primary mx-auto">Call</a>
+        </div>
+    </div>
+    <div class="col">
+    <div id="map" style="height: 400px; width: 100%;"></div>
+    </div>
+  </div>
+  <img class="card-img-top" style="width: 66rem" src="{% if location.photo_url %}{{location.photo_url}}{% else %}https://pegasuseventsindia.files.wordpress.com/2014/04/eventmanagement-1.jpg?w=1400&h=400&crop=1{% endif %}" alt="Card image cap" >
+</div>
+{% endblock body %}
+
+{% block extra_script %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initMap&libraries=&v=weekly" async></script>
+
+<script>
+// Initialize and add the map
+function initMap() {
+  // The location of place
+  const place = { lat: parseFloat({{location.latitude}}), lng: parseFloat({{location.longitude}}) };
+  // The map, centered at place
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 13,
+    center: place,
+  });
+  // The marker, positioned at place
+  const marker = new google.maps.Marker({
+    position: place,
+    map: map,
+  });
+}
+</script>
+{% endblock extra_script %}

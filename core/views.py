@@ -1,4 +1,4 @@
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.core.signing import Signer
@@ -13,7 +13,7 @@ from django.views import View
 from accounts.views import CustomLoginRequiredMixin
 
 from .forms import CalendarForm, LocationForm, NewEventForm, NewGroupForm, LocationForm
-from .models import Event, Friend, FriendGroup, Vote
+from .models import Event, EventComment, EventCommentLike, EventCommentLikeManager, Friend, FriendGroup, Location, Vote, Badge, BadgeFriendRelationship
 
 
 # /
@@ -21,16 +21,21 @@ class HomePageView(View):
     """Web Site's homepage. Friend groups are shown if user is logged in and have groups."""
 
     def render(self, request):
-        return render(request, 'core/home.html', {'groups': self.groups})
+        if len(self.upcoming_events) >= 1:
+            return render(request, 'core/home.html', {'groups': self.groups, 'upcoming_events': self.upcoming_events, 'first_event': self.upcoming_events[0]})
+        return render(request, 'core/home.html', {'groups': self.groups, 'upcoming_events': self.upcoming_events})
 
     def get(self, request):
         if request.user.is_authenticated:
             self.groups = FriendGroup.objects.filter(
                 friend=request.user.friend.get())
+            self.upcoming_events = request.user.friend.get(
+            ).attending_set.filter(state="P2").order_by('start_date')
+
             return self.render(request)
         else:
             self.groups = []
-            return self.render(request)
+            return render(request, 'core/home.html')
 
 
 # group/detail/id
@@ -40,13 +45,21 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
     def render(self, request):
         friends_that_are_not_in_group = Friend.objects.filter(
             Q(friendWith=request.user.friend.get()) & ~Q(friendGroup=self.group))
+
+        try:
+            event_accomplishment_rate = len(Event.objects.filter(Q(group=self.group) & Q(
+                state="H2"))) / len(Event.objects.filter(Q(group=self.group) & Q(state="N")))
+        except ZeroDivisionError:
+            event_accomplishment_rate = 1
         context = {
             'group': self.group,
             'events': self.first_page_event,
+            'all_events': self.all_events,
             'friends': friends_that_are_not_in_group,
             'page_list': self.page_list,
             'page': self.first_page,
             'page_list_event': self.page_list_event,
+            'event_accomplishment_rate': event_accomplishment_rate,
         }
         return render(request, 'core/detail.html', context)
 
@@ -70,7 +83,7 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
         self.first_page = paginator.page(1).object_list
 
         event_objects = Event.objects.filter(group=group_id)
-        #Update events for they are happening or happened
+        # Update events for they are happening or happened
         for event in event_objects:
             event.determineState()
 
@@ -87,8 +100,9 @@ class GroupDetailView(CustomLoginRequiredMixin, View):
         self.first_page_event = paginator_event.page(1).object_list
         if (request.user.friend.get() in self.group.get_friends()) or (request.user.friend.get() == self.group.creator):
             self.events = Event.objects.filter(group__id=group_id)
+            self.all_events = Event.objects.filter(group__id=group_id)
             return self.render(request)
-
+        self.all_events = Event.objects.filter(group__id=group_id)
         messages.error(request, 'You do not belong to that group')
         return redirect('home')
 
@@ -182,14 +196,20 @@ class NewEventView(CustomLoginRequiredMixin, View):
                 # email_list, #to
                 # fail_silently=False,
                 # )
-            return redirect('event_detail',event_id = event.id)
         elif "start_date" in request.POST:
             form = NewEventForm(request.POST)
             if form.is_valid():
                 event = form.save()
-                return redirect('event_detail',event_id = event.id)
+        try:
+            relationship = BadgeFriendRelationship.objects.filter(
+                Q(badge__name="Newbie") & Q(owner__id=event.creator.id))
+            if len(relationship) == 0:
+                BadgeFriendRelationship.objects.create(
+                    badge=Badge.objects.get(id=3), owner=event.creator)
+        except Event.DoesNotExist:
+            return redirect('home')
+        return redirect('event_detail', event_id=event.id)
 
-        return redirect('home')
 
 # event/detail/event_id
 
@@ -198,7 +218,10 @@ class EventDetailView(CustomLoginRequiredMixin, View):
     """Event detail view. Event location and attenders will be rendered for view."""
 
     def render(self, request):
-        return render(request, 'core/event_detail.html', {'event': self.event})
+        yeah_votes = Vote.objects.filter(event=self.event, status=True)
+        no_votes = Vote.objects.filter(event=self.event, status=False)
+        comments = EventComment.objects.filter(event=self.event)
+        return render(request, 'core/event_detail.html', {'event': self.event, 'yeah_votes': yeah_votes, 'no_votes': no_votes, 'comments': comments})
 
     def get(self, request, event_id):
         self.event = Event.objects.get(id=event_id)
@@ -252,6 +275,70 @@ class EventDeleteView(CustomLoginRequiredMixin, View):
         return redirect('detail', group_id=group_id)
 
 
+class LocationListView(View):
+
+    def get(self, request):
+        locations = Location.objects.all()
+        return render(request, 'core/location_list.html', {'location_list': locations})
+
+
+class LocationDetailView(View):
+
+    def get(self, request, location_id):
+        location = Location.objects.get(id=location_id)
+        return render(request, 'core/location_detail.html', {'location': location})
+
+
+class SearchView(View):
+
+    def get(self, request):
+        search_word = request.GET.get('search_word')
+        try:
+            events = Event.objects.filter(name__icontains=search_word)
+            locations = Location.objects.filter(name__icontains=search_word)
+            friends = Friend.objects.filter(
+                user__username__icontains=search_word)
+            groups = FriendGroup.objects.filter(name__icontains=search_word)
+            context = {
+                'search_word': search_word,
+                'events': events,
+                'locations': locations,
+                'friends': friends,
+                'groups': groups
+            }
+        except ValueError:
+            context = {}
+        return render(request, 'core/search_result.html', context)
+
+
+class JoinEventView(CustomLoginRequiredMixin, View):
+
+    def get(self, request, event_id):
+        # P1 and P2 variants
+        event = Event.objects.get(id=event_id)
+        success_message = "You have successfuly joined to the event."
+        if event.state == "P1":
+            try:
+                # For getting the true vote.
+                vote = Vote.objects.get(
+                    Q(friend__user__id=request.user.id) & Q(event_id=event_id))
+                vote.status = True
+            except Vote.DoesNotExist:
+                vote = Vote.objects.create(event=Event.objects.get(
+                    id=event_id), friend=request.user.friend.get(), status=True)
+            vote.save()
+            messages.success(request, success_message +
+                             "However, this event is not fully planned yet, it can be discarded.")
+        elif event.state == "P2":
+            event.attender.add(request.user.friend.get())
+            event.save()
+            messages.success(request, success_message)
+        else:
+            messages.error(
+                request, "You can not join an event that is already happened.")
+        return redirect('event_detail', event_id=event_id)
+
+
 # vote/
 class VoteAjax(CustomLoginRequiredMixin, View):
     """For Ajax response - Handles voting system for events."""
@@ -260,6 +347,14 @@ class VoteAjax(CustomLoginRequiredMixin, View):
         user_id = request.GET.get('user_id', None)
         event_id = request.GET.get('event_id', None)
         status = request.GET.get('status', None)
+        is_render = request.GET.get('render', None)
+        event = Event.objects.get(id=event_id)
+        if is_render:  # Just render the corresponding field
+            context = {
+                'yeah_votes': Vote.objects.filter(event=event, status=True),
+                'no_votes': Vote.objects.filter(event=event, status=False)
+            }
+            return render(request, 'core/ajax_render/event_voters.html', context)
 
         if status == "0":
             status = False
@@ -280,7 +375,7 @@ class VoteAjax(CustomLoginRequiredMixin, View):
                 id=event_id), friend=request.user.friend.get(), status=status)
 
         vote.save()
-        event = Event.objects.get(id=event_id)
+
         data = {
             'yeas': event.getYeas(),
             'nas': event.getNas(),
@@ -396,41 +491,113 @@ class SubmitEventFormAjax(View):
             return render(request, 'core/ajax_render/map_form.html', context={'form_location': form_location, 'event_id': event.id})
 
 
+class EventCommentCreateAjax(View):
+
+    def get(self, request):
+        comment_content = request.GET.get('content', None)
+        event_id = request.GET.get('event_id', None)
+        is_inner = request.GET.get('inner_comment', None)
+        event = Event.objects.get(id=event_id)
+        print(type(is_inner))
+        if is_inner == '0':
+            outer_comment_id = request.GET.get('outer_comment_id', None)
+            outer_comment = EventComment.objects.get(id=outer_comment_id)
+            comment = EventComment.objects.create(
+                creator=request.user.friend.get(),
+                event=event,
+                content=comment_content,
+                is_inner_comment=True,
+            )
+            outer_comment.comments.add(comment)
+            outer_comment.save()
+        else:
+            EventComment.objects.create(
+                creator=request.user.friend.get(),
+                event=event,
+                content=comment_content,
+            )
+        return render(request, 'core/ajax_render/comments.html', context={'comments': event.comments.all()})
+
+
+class LikeEventCommentAjax(View):
+    def get(self, request):
+        comment_id = request.GET.get('comment_id', None)
+        event_id = request.GET.get('event_id', None)
+        status = request.GET.get('status', None)
+        event = Event.objects.get(id=event_id)
+        comment = EventComment.objects.get(id=comment_id)
+        try:
+            event_comment_like = EventCommentLike.likes.filter(
+                Q(comment=comment) & Q(liker=request.user.friend.get()))[0]
+            if status == "false":
+                if event_comment_like.like_or_dislike == False:
+                    event_comment_like.delete()
+                else:
+                    event_comment_like.like_or_dislike = False
+                    event_comment_like.save()
+            else:
+                if event_comment_like.like_or_dislike == True:
+                    event_comment_like.delete()
+                else:
+                    event_comment_like.like_or_dislike = True
+                    event_comment_like.save()
+
+        except IndexError:
+            if status == "false":
+                EventCommentLike.likes.create(
+                    liker=request.user.friend.get(), comment=comment, like_or_dislike=False)
+            else:
+                EventCommentLike.likes.create(
+                    liker=request.user.friend.get(), comment=comment, like_or_dislike=True)
+
+        return render(request, 'core/ajax_render/comments.html', context={'comments': event.comments.all()})
+
+
 class TestView(View):
 
-    def get(self,request,group_id):
+    def get(self, request, group_id):
         print(request.GET)
         length = int(request.GET.get('length'))
         friends = Friend.objects.filter(friendGroup__id=group_id)
         length_for_pause = 1
         #exclude = [23,7]
-        starting_time_to_try = timezone.now() + timedelta(hours=length_for_pause) + timedelta(hours=3) #Last timedelta is for correcting timezone
+        starting_time_to_try = timezone.now() + timedelta(hours=length_for_pause) + \
+            timedelta(hours=3)  # Last timedelta is for correcting timezone
         ending_time_to_try = starting_time_to_try + timedelta(hours=length)
         while(True):
             flag = False
             for friend in friends:
                 for attending_event in friend.attending_set.all():
-                    if starting_time_to_try > attending_event.start_date and ending_time_to_try < attending_event.end_date: #engaged time contains the interval in it
+                    # engaged time contains the interval in it
+                    if starting_time_to_try > attending_event.start_date and ending_time_to_try < attending_event.end_date:
                         flag = True
-                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
-                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        starting_time_to_try = attending_event.end_date + \
+                            timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + \
+                            timedelta(hours=length)
                         break
-                    elif starting_time_to_try < attending_event.start_date and ending_time_to_try > attending_event.end_date: #event contains engaged time
+                    elif starting_time_to_try < attending_event.start_date and ending_time_to_try > attending_event.end_date:  # event contains engaged time
                         flag = True
-                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
-                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        starting_time_to_try = attending_event.end_date + \
+                            timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + \
+                            timedelta(hours=length)
                         break
-                    elif starting_time_to_try < attending_event.end_date and ending_time_to_try > attending_event.start_date: #event start time is in engaged time
+                    elif starting_time_to_try < attending_event.end_date and ending_time_to_try > attending_event.start_date:  # event start time is in engaged time
                         flag = True
-                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
-                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        starting_time_to_try = attending_event.end_date + \
+                            timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + \
+                            timedelta(hours=length)
                         break
-                    elif  starting_time_to_try < attending_event.end_date and ending_time_to_try > attending_event.start_date: #event end time is in engaged time
+                    elif starting_time_to_try < attending_event.end_date and ending_time_to_try > attending_event.start_date:  # event end time is in engaged time
                         flag = True
-                        starting_time_to_try = attending_event.end_date + timedelta(hours=length_for_pause)
-                        ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                        starting_time_to_try = attending_event.end_date + \
+                            timedelta(hours=length_for_pause)
+                        ending_time_to_try = starting_time_to_try + \
+                            timedelta(hours=length)
                         break
-                if flag: #skip night
+                if flag:  # skip night
                     if starting_time_to_try.hour == 23:
                         starting_time_to_try += timedelta(hours=8)
                     elif starting_time_to_try.hour == 6:
@@ -447,14 +614,15 @@ class TestView(View):
                         starting_time_to_try += timedelta(hours=6)
                     elif starting_time_to_try.hour == 0:
                         starting_time_to_try += timedelta(hours=7)
-                    ending_time_to_try = starting_time_to_try + timedelta(hours=length)
+                    ending_time_to_try = starting_time_to_try + \
+                        timedelta(hours=length)
                     break
             if flag:
                 flag = False
-                if starting_time_to_try > timezone.now() + timedelta(days=30): #Only look for 30 days ahead
+                if starting_time_to_try > timezone.now() + timedelta(days=30):  # Only look for 30 days ahead
                     print("There is no possible interval.")
                     context = {
-                        'error':"There is no possible interval in your group schedule."
+                        'error': "There is no possible interval in your group schedule."
                     }
                     break
             else:

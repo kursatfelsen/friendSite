@@ -1,17 +1,43 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block body %}
     <div class="container">
         <section class="jumbotron text-center" >
             <div class="container">
-            <h1 class="jumbotron-heading text-white" >My Friend Groups</h1>
-            <p class="lead text-white">Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely.</p>
+            {% if user.is_authenticated %}
+                <h1 class="jumbotron-heading text-white" >Upcoming Events</h1>
+                
+                <table class="table table-hover text-white">
+                    <thead>
+                        <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Time Left</th>
+                        </tr>
+                        <tbody>
+                            {% for event in upcoming_events %}
+                                <tr>
+                                <td><a href="{% url 'event_detail' event.id %}">{{event.name}}</a></td>
+                                <td>{{event.location}}</td>
+                                <td>{{event.start_date | naturaltime}}</td>
+                                </tr>                        
+                            {% endfor %}
+
+                        </tbody>
+                    </thead>
+                </table>
+            {% else %}
+            <h1 class="jumbotron-heading text-white" >Welcome</h1>
+            {% endif %}
+
             <p>
                 <a href="{% url 'new_group' %}" class="btn btn-primary my-2">Create a new group</a>
                 <a href="#" class="btn btn-secondary my-2 ml-3">Join a new group</a>
             </p>
             </div>
         </section>
+        <h2 class="text-center">Friend Groups</h2>
         <div class="album py-5" style="background-color:#EEE2DC;border-radius:.3rem;">
             <div class="container">
                 <div class="row">
@@ -28,7 +54,7 @@
                                     <a href="{% url 'detail' group.id %}"><button type="button" class="btn btn-sm btn-outline-primary mr-2" name="view-button">View</button></a>
                                     <a href="{% url 'edit_group' group.id %}"><button type="button" class="btn btn-sm btn-outline-primary" name="edit-button">Edit</button></a>
                                     </div>
-                                    <small class="text-white">9 mins</small>
+                                    <small class="text-white">Next Event: {{first_event.start_date | naturaltime}}</small>
                                 </div>
                                 </div>
                             </div>

@@ -27,7 +27,7 @@ class Friend(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='friend')
     friendGroup = models.ManyToManyField(FriendGroup, blank=True)
-    friendWith = models.ManyToManyField('self',blank=True)
+    friendWith = models.ManyToManyField('self', blank=True)
     description = models.TextField(blank=True)
     img = models.TextField(blank=True)
     address = models.CharField(max_length=200, blank=True, null=True)
@@ -47,14 +47,14 @@ class Friend(models.Model):
     def leave_group(self, group_id):
         self.friendGroup.remove(FriendGroup.objects.get(id=group_id))
 
-    def add_friend(self,friend_id):
+    def add_friend(self, friend_id):
         self.friendWith.add(Friend.objects.get(id=friend_id))
-    
+
     def remove_friend(self, friend_id):
         self.friendWith.remove(Friend.objects.get(id=friend_id))
 
     def is_friend(self, friend_id):
-        friend = Friend.objects.get(id = friend_id)
+        friend = Friend.objects.get(id=friend_id)
         if (friend in self.friendWith.all()):
             return True
         return False
@@ -76,7 +76,6 @@ class Location(models.Model):
         verbose_name="Type", max_length=100, null=True, blank=True)
     photo_url = models.CharField(
         verbose_name="Photo", max_length=2000, null=True, blank=True)
-
     longitude = models.CharField(
         verbose_name="Longitude", max_length=50, null=True, blank=True)
     latitude = models.CharField(
@@ -95,10 +94,10 @@ class Calendar(models.Model):
     def __str__(self):
         return self.name
 
-        
+
 class Event(models.Model):
     class Meta:
-        ordering = ('state','start_date')
+        ordering = ('state', 'start_date')
     PROPOSED = 'P1'
     PLANNED = 'P2'
     HAPPENING = 'H1'
@@ -119,7 +118,8 @@ class Event(models.Model):
     #start_time = models.TimeField(null=True)
     end_date = models.DateTimeField(null=True)
     #end_time = models.TimeField(null=True)
-    location = models.ForeignKey(Location, blank=True, on_delete=models.CASCADE,null=True)
+    location = models.ForeignKey(
+        Location, blank=True, on_delete=models.CASCADE, null=True)
     #calendar = models.ForeignKey(Calendar, blank=True, on_delete=models.CASCADE)
     group = models.ForeignKey(FriendGroup, on_delete=models.CASCADE)
     state = models.CharField(
@@ -151,6 +151,30 @@ class Event(models.Model):
         self.save()
 
 
+# class EventNotification(models.Model):
+#     event = models.ForeignKey()
+#     dismissed = models.BooleanField(default=False)
+
+
+class EventComment(models.Model):
+    creator = models.ForeignKey(Friend, blank=True, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField(max_length=2000)
+    created_time = models.DateTimeField(auto_now_add=True)
+    comments = models.ManyToManyField('self',related_name='has_comments',symmetrical=False,blank=True)
+    is_inner_comment = models.BooleanField(default=False)
+
+
+class EventCommentLikeManager(models.Manager):
+    def total_likes(self):
+        return len(self.get_queryset().filter(like_or_dislike=True)) - len(self.get_queryset().filter(like_or_dislike=False))
+
+class EventCommentLike(models.Model):
+    liker = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='has_comment_likes')
+    comment = models.ForeignKey(EventComment, on_delete=models.CASCADE,related_name='comment_likes')
+    like_or_dislike = models.BooleanField(default=True)
+    likes = EventCommentLikeManager()
+
 
 class Vote(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
@@ -162,8 +186,10 @@ class Vote(models.Model):
 
 
 class FriendRequest(models.Model):
-    sender = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='sent_request')
-    receiver = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='received_request')
+    sender = models.ForeignKey(
+        Friend, on_delete=models.CASCADE, related_name='sent_request')
+    receiver = models.ForeignKey(
+        Friend, on_delete=models.CASCADE, related_name='received_request')
     status = models.BooleanField(default=False)
 
     def __str__(self):
@@ -171,10 +197,34 @@ class FriendRequest(models.Model):
 
 
 class GroupInvitation(models.Model):
-    sender = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='sent_invitation')
-    receiver = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='received_invitation')
-    group = models.ForeignKey(FriendGroup,on_delete=models.CASCADE,related_name='invitation_group')
+    sender = models.ForeignKey(
+        Friend, on_delete=models.CASCADE, related_name='sent_invitation')
+    receiver = models.ForeignKey(
+        Friend, on_delete=models.CASCADE, related_name='received_invitation')
+    group = models.ForeignKey(
+        FriendGroup, on_delete=models.CASCADE, related_name='invitation_group')
     status = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.sender}'s group invitation to {self.receiver}: {self.status}"
+
+
+class Badge(models.Model):
+    #owner = models.ForeignKey(Friend, on_delete=models.CASCADE,related_name='badges')
+    name = models.CharField(max_length=30)
+    description = models.TextField(max_length=200, null=True)
+    img = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='images/', null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class BadgeFriendRelationship(models.Model):
+    owner = models.ForeignKey(
+        Friend, on_delete=models.CASCADE, related_name='badge_relation')
+    badge = models.ForeignKey(
+        Badge, on_delete=models.CASCADE, related_name='owners')
+
+    def __str__(self):
+        return f"{self.owner} has {self.badge.name}"

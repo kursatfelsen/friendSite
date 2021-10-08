@@ -1,6 +1,5 @@
 body{
     background-color:#EEE2DC!important;
-    color: white;
 }
 #main-navbar{
     background-color:#AC3B61;
@@ -19,7 +18,6 @@ a {
 }
 
 .card {
-    color:white;
     background-color:#123c69;
 }
 [name="danger-button"]:hover{

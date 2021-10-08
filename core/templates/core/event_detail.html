@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
+{% block extra_head %}
+<style>
+.gradient-custom { /* fallback for old browsers */ background: #4facfe; /* Chrome 10-25,
+Safari 5.1-6 */ background: -webkit-linear-gradient(to bottom right, black, gray); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+,
+Safari 7+ */ background: linear-gradient(to bottom right, black, gray) }
+</style>
+{% endblock extra_head %}
 {% block body %}
 <h1 class="text-center">Event Details<a href="{% url 'detail' event.group.id %}" class="text-decoration-none text-white"><button class="btn btn-danger ml-4">Turn back to group</a></span></h1>
 
@@ -13,13 +20,13 @@
         <li class="list-group-item"><b>Ending Time</b><span class="float-right">{{event.end_date}} - {{event.end_time}}</span></li>
         <li class="list-group-item"><b>State</b><span class="float-right">{{event.get_state_display}}</span></li>
         <li class="list-group-item"><b>Creator</b><span class="float-right">{{event.creator.user.username}}</span></li>
+        <li class="list-group-item"><b>Invite Link</b><span class="float-right">{{ request.scheme }}://{{ request.get_host }}{% url 'event_join' event.id %}</span></li>
       </ul>
     </div>
   {% if event.state != "P1" %}
     <div id="event-attender">
     {% include "core/ajax_render/event_detail_planned.html" %}
     </div>
-  {% else %}
   {% endif %}
 
 </div>
@@ -40,6 +47,9 @@
         <a href="{% url 'event_edit' event.id %}"><button class="btn float-right" name="edit-event-button">Edit</button></a>
         <a href="{% url 'event_delete' event.id %}"><button class="btn float-right mr-1" name="delete-event-button">Delete</button></a>
     {% endif %}
+    <div id="event-voters">
+    {% include "core/ajax_render/event_voters.html" %}
+    </div>
 {% else %}
     <a href="{% url 'event_edit' event.id %}"><button class="btn float-right " name="edit-event-button">Edit</button></a><span></span>
     <a href="{% url 'event_delete' event.id %}"><button class="btn float-right mr-1" name="delete-event-button">Delete</button></a>
@@ -72,9 +82,16 @@
 
 </div>
 {% else %}
+
 <h2 class="text-center">There is no location is set for this event.</h2>
-<button class="btn btn-success mx-auto">Set a location</button>
+{% if request.user.friend == event.creator %}
+  <button class="btn btn-success mx-auto">Set a location</button>
 {% endif %}
+
+{% endif %}
+
+
+{% include "core/ajax_render/comments.html" %}
 
 {% endblock body %}
 
@@ -105,19 +122,27 @@ function initMap() {
 
 function vote(u_id, e_id, status){
         $.ajax({
-            url: {% url 'vote' %},
+            url: "{% url 'vote' %}",
             type: "GET",
             data: {'user_id': u_id,'event_id':e_id,'status':status},
             success: function (data) {
                 document.getElementById(e_id+'-0').value = data.nas;
                 document.getElementById(e_id+'-1').value = data.yeas;
+                $.ajax({
+                  url: {% url 'vote' %},
+                  type: "GET",
+                  data: {'render':true,'event_id':e_id},
+                  success: function(data){
+                    document.getElementById('event-voters').innerHTML = data;
+                  }
+                });
             }
         });
     }
 
 function plan(e_id){
         $.ajax({
-            url: {% url 'plan' %},
+            url: "{% url 'plan' %}",
             type: "GET",
             data: {'event_id':e_id},
             success: function (data) {
@@ -133,6 +158,52 @@ function plan(e_id){
             }
         });
     }
+  
+function makeComment(){
+        if  (!$.trim(document.getElementById('main-comment-content').value).length){
+          alert("Comment content field cannot be empty.");
+          return;
+        }
+        $.ajax({
+          url: "{% url 'create_comment' %}",
+          type: "GET",
+          data: {'event_id':{{event.id}},'content':document.getElementById('main-comment-content').value,'inner_comment':1 },
+          success: function(data){
+            document.getElementById('comment-section').outerHTML = data;
+          }
+        });
+}
+
+function makeInnerComment(outer_comment_id){
+        if  (!$.trim(document.getElementById('inner-comment-content-'+ outer_comment_id).value).length){
+          alert("Comment content field cannot be empty.");
+          return;
+        }
+        $.ajax({
+          url: "{% url 'create_comment' %}",
+          type: "GET",
+          data: {'event_id':{{event.id}},'content':document.getElementById('inner-comment-content-'+ outer_comment_id).value,'outer_comment_id':outer_comment_id,'inner_comment':0 },
+          success: function(data){
+            document.getElementById('comment-section').outerHTML = data;
+          }
+        });
+}
+
+function openCommentField(outer_comment_id){
+    document.getElementById(outer_comment_id+'-comment-input').innerHTML = '<div class="input-group"><span class="input-group-text">Comment content</span><textarea class="form-control" aria-label="With textarea" id="inner-comment-content-'+ outer_comment_id +'"></textarea></div><button class="btn btn-primary" onclick=makeInnerComment('+outer_comment_id+')>Make Comment</button>';
+}
+
+function like(comment_id,status){
+        $.ajax({
+            url: "{% url 'like_comment' %}",
+            type: "GET",
+            data: {'event_id':{{event.id}},'comment_id':comment_id,'status':status},
+            success: function (data) {
+              document.getElementById('comment-section').outerHTML = data;
+            }
+        });
+} 
+
 </script>
 {% endblock extra_script %}
     

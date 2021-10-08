@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 
 from .models import Calendar, Event, FriendGroup, Location
 
+
 class NewEventForm(forms.ModelForm):
     class Meta:
         model = Event
@@ -45,7 +46,7 @@ class NewEventForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        #Protection against old date input
+        # Protection against old date input
         if cleaned_data['start_date'] > cleaned_data['end_date']:
             raise ValidationError('End date must be later than start date.')
 
@@ -55,11 +56,11 @@ class NewGroupForm(forms.ModelForm):
         model = FriendGroup
         fields = '__all__'
         widgets = {
-            'creator': forms.TextInput(attrs={ #This field is not for taking input, just for giving info to user
+            'creator': forms.TextInput(attrs={  # This field is not for taking input, just for giving info to user
                 'readonly': "readonly",
-                'id':'creator',
+                'id': 'creator',
             }),
-            }
+        }
 
 
 class LocationForm(forms.ModelForm):
@@ -98,8 +99,8 @@ class LocationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        #Google places api undefined data fields should be empty.
-        cleaned_data['type'] = cleaned_data['type'].replace('_',' ')
+        # Google places api undefined data fields should be empty.
+        cleaned_data['type'] = cleaned_data['type'].replace('_', ' ')
         if cleaned_data['name'] == "undefined":
             cleaned_data['name'] = ""
         if cleaned_data['address'] == "undefined":
@@ -123,7 +124,7 @@ class CalendarForm(forms.ModelForm):
 
     class Meta:
         model = Calendar
-        exclude = ("owner","visible_for","editable_by")
+        exclude = ("owner", "visible_for", "editable_by")
 
     def save(self, commit=True):
         calendar = self.instance

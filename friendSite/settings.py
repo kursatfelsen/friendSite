@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.auth',
-    
+    'django.contrib.humanize',
+
     'widget_tweaks',
     'googlemaps',
     'phonenumber_field',

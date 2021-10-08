@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block body %}
+<h1 class="text-center">Search results for: {{search_word}}</h1>
+<hr>
+{% if groups %}
+<table class="table table-hover" id="groupTable">
+    <thead>
+        <tr class="header">
+        <th scope="col" onclick="sortTable('groupTable',0)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Name</th>
+        <th scope="col" onclick="sortTable('groupTable',1)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Creator</th>
+        <span class="badge bg-primary float-right rounded-pill">{{groups | length}}</span>
+        </tr>
+        <tbody>
+            {% for group in groups %}
+                {% if group.is_private %}
+                    {% if request.user.friend.get in group.friend_set.all %}
+                        <tr>
+                        <td><a href="{% url 'detail' group.id %}">{{group.name}}</a></td>
+                        <td>{{group.creator}}</td>
+                        </tr>
+                    {% endif %}
+                {% else %}
+                <tr>
+                <td><a href="{% url 'detail' group.id %}">{{group.name}}</a></td>
+                <td>{{group.creator}}</td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </thead>
+</table>
+<br><br>
+{% endif %}
+
+{% if friends %}
+<table class="table table-hover" id="friendTable">
+    <thead>
+        <tr class="header">
+        <th scope="col" onclick="sortTable('friendTable',0)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Name</th>
+        <span class="badge bg-primary float-right rounded-pill">{{friends | length}}</span>
+        </tr>
+        <tbody>
+            {% for friend in friends %}
+                <tr>
+                <td><a href="{% url 'profile' friend.user.username %}">{{friend.user.username}}</a></td>
+                </tr>
+            {% endfor %}
+
+        </tbody>
+    </thead>
+</table>
+<br><br>
+{% endif %}
+
+{% if events %}
+<table class="table table-hover" id="eventTable">
+    <thead>
+        <tr class="header">
+            <th scope="col" onclick="sortTable('eventTable',0)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Name</th>
+            <th scope="col" onclick="sortTable('eventTable',1)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Starting Date</th>
+            <th scope="col" onclick="sortTable('eventTable',2)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Ending Date</th>
+            <th scope="col" onclick="sortTable('eventTable',3)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Location</th>
+            <th scope="col" onclick="sortTable('eventTable',4)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Group</th>
+            <th scope="col" onclick="sortTable('eventTable',5)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Creator</th>
+            <th scope="col" onclick="sortTable('eventTable',6)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> State</th>
+            <span class="badge bg-primary float-right rounded-pill">{{events | length}}</span>
+        </tr>
+        <tbody>
+            {% for event in events %}
+                {% if event.group.is_private %}
+                    {% if request.user.friend.get in event.group.friend_set.all %}
+                        <tr>
+                        <td><a href="{% url 'event_detail' event.id %}">{{event.name}}</a></td>
+                        <td>{{event.start_date}}</td>
+                        <td>{{event.end_date}}</td>
+                        <td>{% if event.location %}<a href="{% url 'location_detail' event.location.id%}">{% endif %}{{event.location}}</a></td>
+                        <td><a href="{% url 'detail' event.group.id %}">{{event.group}}</a></td>
+                        <td><a href="{% url 'profile' event.creator.user.id %}">{{event.creator}}</a></td>
+                        <td>{{event.get_state_display}}</td>
+                        </tr>
+                    {% endif %}
+                {% else %}
+                <tr>
+                <td><a href="{% url 'event_detail' event.id %}">{{event.name}}</a></td>
+                <td>{{event.start_date}}</td>
+                <td>{{event.end_date}}</td>
+                <td>{% if event.location %}<a href="{% url 'location_detail' event.location.id%}">{% endif %}{{event.location}}</a></td>
+                <td><a href="{% url 'detail' event.group.id %}">{{event.group}}</a></td>
+                <td><a href="{% url 'profile' event.creator.user.id %}">{{event.creator}}</a></td>
+                <td>{{event.get_state_display}}</td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+
+        </tbody>
+    </thead>
+</table>
+<br><br>
+{% endif %}
+
+{% if locations %}
+<table id="locationTable" class="table table-hover">
+    <thead>
+        <tr class="header">
+            <th scope="width:60%;" onclick="sortTable('locationTable',0)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Name</th>
+            <th scope="width:30%" onclick="sortTable('locationTable',1)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Type</th>
+            <th scope="width:10%" onclick="sortTable('locationTable',2)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Rating</th>
+        </tr>
+        <span class="badge bg-primary float-right rounded-pill">{{locations | length}}</span>
+        <tbody>
+    {% for location in locations %}
+        <tr>
+        <td><a href="{% url 'location_detail' location.id %}">{{location.name}}</a></td>
+        <td>{{location.type}}</td>
+        <td>{{location.rating}}</td>
+        </tr>                        
+    {% endfor %}
+
+        </tbody>
+    </thead>
+</table>
+{% endif %}
+
+
+
+{% if locations or events or locations or groups %}
+{% else %}
+
+<h2 class="text-center">There is nothing related to that.</h2>
+{% endif %}
+
+
+{% endblock body %}
+
+{% block extra_script %}
+<script>
+function sortTable(table_id,n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById(table_id);
+  switching = true;
+  // Set the sorting direction to ascending:
+  dir = "asc";
+  /* Make a loop that will continue until
+  no switching has been done: */
+  while (switching) {
+    // Start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /* Loop through all table rows (except the
+    first, which contains table headers): */
+    for (i = 1; i < (rows.length - 1); i++) {
+      // Start by saying there should be no switching:
+      shouldSwitch = false;
+      /* Get the two elements you want to compare,
+      one from current row and one from the next: */
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /* Check if the two rows should switch place,
+      based on the direction, asc or desc: */
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      /* If a switch has been marked, make the switch
+      and mark that a switch has been done: */
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      // Each time a switch is done, increase this count by 1:
+      switchcount ++;
+    } else {
+      /* If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again. */
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}</script>
+{% endblock extra_script %}

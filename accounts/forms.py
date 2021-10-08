@@ -13,8 +13,3 @@ class UserProfileForm(forms.ModelForm):
             'password',
             'date_joined'
         ]
-
-
-
-
-

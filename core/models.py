@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from phonenumber_field.modelfields import PhoneNumberField
-# Create your models here.
+
+from .managers import *
 
 
 class FriendGroup(models.Model):
@@ -13,6 +14,7 @@ class FriendGroup(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     img_url = models.TextField(blank=True)
     is_private = models.BooleanField(blank=True, default=False)
+    is_active = models.BooleanField(default=True)
     # friend_set for friendGroup field in Friend
     # event_set for group field in Event
 
@@ -33,6 +35,7 @@ class Friend(models.Model):
     address = models.CharField(max_length=200, blank=True, null=True)
     fullname = models.CharField(max_length=30, blank=True)
     phone = PhoneNumberField(blank=True)
+    is_active = models.BooleanField(default=True)
     # event for creator
     # event_set for group field in Event
     # attending_set for attender field in Event
@@ -80,7 +83,7 @@ class Location(models.Model):
         verbose_name="Longitude", max_length=50, null=True, blank=True)
     latitude = models.CharField(
         verbose_name="Latitude", max_length=50, null=True, blank=True)
-
+    is_active = models.BooleanField(default=True)
     def __str__(self):
         return self.name
 
@@ -129,6 +132,7 @@ class Event(models.Model):
     )
     ranking = models.IntegerField(null=True, default=0)
     # vote_set for event field in Vote
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -151,27 +155,23 @@ class Event(models.Model):
         self.save()
 
 
-# class EventNotification(models.Model):
-#     event = models.ForeignKey()
-#     dismissed = models.BooleanField(default=False)
-
-
 class EventComment(models.Model):
     creator = models.ForeignKey(Friend, blank=True, on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='comments')
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField(max_length=2000)
     created_time = models.DateTimeField(auto_now_add=True)
-    comments = models.ManyToManyField('self',related_name='has_comments',symmetrical=False,blank=True)
+    comments = models.ManyToManyField(
+        'self', related_name='has_comments', symmetrical=False, blank=True)
     is_inner_comment = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
-
-class EventCommentLikeManager(models.Manager):
-    def total_likes(self):
-        return len(self.get_queryset().filter(like_or_dislike=True)) - len(self.get_queryset().filter(like_or_dislike=False))
 
 class EventCommentLike(models.Model):
-    liker = models.ForeignKey(Friend,on_delete=models.CASCADE,related_name='has_comment_likes')
-    comment = models.ForeignKey(EventComment, on_delete=models.CASCADE,related_name='comment_likes')
+    liker = models.ForeignKey(
+        Friend, on_delete=models.CASCADE, related_name='has_comment_likes')
+    comment = models.ForeignKey(
+        EventComment, on_delete=models.CASCADE, related_name='comment_likes')
     like_or_dislike = models.BooleanField(default=True)
     likes = EventCommentLikeManager()
 
@@ -180,6 +180,7 @@ class Vote(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     friend = models.ForeignKey(Friend, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.friend}'s vote on {self.event}: {self.status}"

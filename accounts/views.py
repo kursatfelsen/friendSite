@@ -1,22 +1,19 @@
-from django.db.models.aggregates import Count
-from django.db.models.query_utils import Q
-from core.forms import CalendarForm
-from accounts.forms import UserProfileForm
-
-from core.models import BadgeFriendRelationship, Event, Friend, FriendRequest
-
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
-
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from django.db.models.aggregates import Count
+from django.db.models.query_utils import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
+
+from accounts.forms import FriendProfileForm, UserProfileForm
+from core.forms import CalendarForm
+from core.models import BadgeFriendRelationship, Event, Friend, FriendRequest, Vote
 
 
 class CustomLoginRequiredMixin(LoginRequiredMixin):
@@ -110,7 +107,7 @@ class SettingsView(CustomLoginRequiredMixin, View):
             self.friend = Friend.objects.get(user=self.user)
             self.friendgroups = self.friend.friendGroup.all()
             return self.render(request)
-        messages.error(request, "You have no access to that area.")
+        messages.error(request, 'You have no access to that area.')
         return redirect('home')
 
 
@@ -121,15 +118,12 @@ class ProfileView(CustomLoginRequiredMixin, View):
     def render(self, request):
         friend_set = self.friend.friendWith.all()
         friend_request_set = FriendRequest.objects.filter(
-            receiver=request.user.friend.get())
+            receiver=request.user.friend)
 
         attended_events = Event.objects.filter(
-            Q(state="H2") & Q(attender=self.friend))
+            Q(state='H2') & Q(attender=self.friend))
         most_visited_event_locations = attended_events.values(
             'location', 'location__name', 'location__id').annotate(lcount=Count('location')).order_by('-lcount')
-        # most_visited_event_locations = attended_events.annotate(num_locations=Count(
-        #     'location')).order_by('num_locations')[:5].values('location__name','location__id','num_locations')  # Most visited locations
-        #most_same_event_with_friend = attended_events.annotate(num_attenders=Count('attender')).order_by('num_attenders')[:5].values('attender__user__username')
         badges = BadgeFriendRelationship.objects.filter(
             owner=self.friend).values('badge__name')
 
@@ -139,6 +133,7 @@ class ProfileView(CustomLoginRequiredMixin, View):
             'groups': self.friendgroups,
             'events_as_creator': self.events_as_creator,
             'events_as_attender': self.events_as_attender,
+            'events_as_yeah_voter':self.events_as_yeah_voter,
             'friend_set': friend_set,
             'friend_request_set': friend_request_set,
             'most_visited_event_locations': most_visited_event_locations,
@@ -146,8 +141,8 @@ class ProfileView(CustomLoginRequiredMixin, View):
         }
         try:
             friend_request = FriendRequest.objects.get(
-                Q(receiver__id=self.friend.id) & Q(sender__id=request.user.friend.get().id))
-            context["friend_request"] = friend_request
+                Q(receiver__id=self.friend.id) & Q(sender__id=request.user.friend.id))
+            context['friend_request'] = friend_request
         except:
             pass
         return render(request, 'accounts/profile.html', context)
@@ -162,10 +157,39 @@ class ProfileView(CustomLoginRequiredMixin, View):
                 is_private=False)
         self.events_as_creator = Event.objects.filter(creator=self.friend)
         self.events_as_attender = Event.objects.filter(attender=self.friend)
+        self.events_as_yeah_voter = Vote.objects.filter(Q(friend=self.friend)&Q(status=True))
         return self.render(request)
 
 
-"""For future calendarview purposes"""
+class ProfileEditView(LoginRequiredMixin, View):
+
+    def get(self, request, username):
+        if request.user.username == username:
+            context = {
+                'user_form': UserProfileForm(prefix='user', instance=request.user),
+                'friend_form': FriendProfileForm(prefix='friend', instance=request.user.friend)
+            }
+            return render(request, 'accounts/edit_profile.html', context)
+        else:
+            messages.error(request, 'You can not edit other profiles.')
+            return redirect('profile', username=request.user.username)
+
+    def post(self, request, username):
+        form_data = request.POST.copy()
+        form_data['user-user_id'] = request.user.id
+        form_data['friend-id'] = request.user.friend.id
+        user = request.user
+        friend = request.user.friend
+        user_form = UserProfileForm(form_data, prefix="user",instance=user)
+        friend_form = FriendProfileForm(form_data, prefix="friend",instance=friend)
+        if user_form.is_valid() and friend_form.is_valid():  # All validation rules pass
+            user_form.save()
+            friend_form.save()
+            messages.success(request, 'Successfully updated.')
+            return redirect('profile', username=username)
+        else:
+            messages.error(request, 'Update was not successful.')
+            return redirect('edit_profile', username=username)
 
 
 class CalendarView(CustomLoginRequiredMixin, View):
@@ -177,12 +201,12 @@ class CalendarView(CustomLoginRequiredMixin, View):
         if request.user.username == self.user.username:
             form = CalendarForm()
             self.context = {
-                'events': Event.objects.filter(attender=request.user.friend.get()),
+                'events': Event.objects.filter(attender=request.user.friend),
                 'form': form,
             }
 
             return self.render(request)
-        messages.error(request, "You have no access to that area.")
+        messages.error(request, 'You have no access to that area.')
         return redirect('home')
 
 
@@ -241,13 +265,13 @@ class AcceptFriendAjax(View):
         friend = Friend.objects.get(id=friend_id)
         friend.friendWith.add(friend_request.sender)
         friend_request.delete()
-        return render(request, 'accounts/ajax_render/friend_request.html', {'friend': Friend.objects.get(id=request.user.friend.get().id)})
+        return render(request, 'accounts/ajax_render/all_friend_list.html', {'friend': Friend.objects.get(id=request.user.friend.id)})
 
 
 class RemoveFriendAjax(View):
 
     def get(self, request):
         friend_id = request.GET.get('friend_id')
-        request.user.friend.get().remove_friend(friend_id)
+        request.user.friend.remove_friend(friend_id)
         data = {}
         return JsonResponse(data)

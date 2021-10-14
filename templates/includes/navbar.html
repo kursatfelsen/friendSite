@@ -1,7 +1,7 @@
 {% load static  %}
 <nav class="navbar navbar-expand-lg navbar-light bg-dark sticky-top" id="main-navbar">
   <div class="container-fluid">
-    <img src="{% static 'img/favicon.ico' %}" style="width:2rem" class="mr-2">
+    <img src="{% static 'img/favicon.ico' %}" style="width:2rem;margin-right:1rem;">
     <a class="navbar-brand" href="{% url 'home' %}">Friends</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -17,7 +17,7 @@
             Friend Groups
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            {% for group in request.user.friend.get.friendGroup.all %}
+            {% for group in request.user.friend.friendGroup.all %}
               <li><a class="dropdown-item" href="{% url 'detail' group.id %}" style="color: black!important;">{{group.name}}</a></li>
             {% endfor %}
           </ul>

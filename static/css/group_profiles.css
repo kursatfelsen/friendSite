@@ -158,10 +158,10 @@
     h1.effect-underline:after {
         content: '';
         position: absolute;
-        left: 4rem;
+        left: 23rem;
         display: inline-block;
         height: 1em;
-        width: 80%;
+        width: 60%;
         border-bottom: 3px solid;
         margin-top: 20px;
         opacity: 0;

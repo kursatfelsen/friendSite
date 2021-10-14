@@ -15,7 +15,7 @@ urlpatterns = [
 
     # Event
     path('event/newevent/', NewEventView.as_view(), name='new_event_post'),
-    path('event/newevent/<int:group_id>',
+    path('event/newevent/',
          NewEventView.as_view(), name='new_event_get'),
     path('event/detail/<int:event_id>',
          EventDetailView.as_view(), name='event_detail'),
@@ -26,11 +26,15 @@ urlpatterns = [
 
     # Location
     path('location/', LocationListView.as_view(), name='location_list'),
+    path('location/<int:event_id>/',LocationSetView.as_view(),name='location_set'),
     path('location/<slug:location_id>/',
          LocationDetailView.as_view(), name='location_detail'),
-
+    
     # Search
     path('search/', SearchView.as_view(), name='search'),
+
+    # Recommend
+    path('recommend/', RecommendEventView.as_view(), name='recommend_event'),
 
     # Ajax
     path('dismiss/', DismissAjax.as_view(), name='dismiss'),

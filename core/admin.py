@@ -1,18 +1,20 @@
 from django.contrib import admin
 
-from .models import EventCommentLike, EventComment, FriendGroup, Event, Friend, FriendRequest, Vote, Location, Calendar, GroupInvitation, Badge, BadgeFriendRelationship
+from .models import (Badge, BadgeFriendRelationship, Event,
+                     EventComment, EventCommentLike, Friend, FriendGroup,
+                     FriendRequest, GroupInvitation, Location, Vote)
 
-
-admin.site.register(Friend)
 admin.site.register(EventCommentLike)
+
 
 class EventCommentInline(admin.TabularInline):
     model = EventComment
 
+
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'creator', 'start_date',
-                    'end_date', 'location', 'group', 'state')
+    list_display = ('id','name', 'creator', 'start_date',
+                    'end_date', 'type', 'location', 'group', 'state')
     inlines = [
         EventCommentInline,
     ]
@@ -22,6 +24,17 @@ class EventAdmin(admin.ModelAdmin):
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('event', 'friend', 'status')
 
+
+class EventInline(admin.TabularInline):
+    model = Event.attender.through
+
+
+@admin.register(Friend)
+class VoteAdmin(admin.ModelAdmin):
+    model = Friend
+    inlines = [
+        EventInline,
+    ]
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):

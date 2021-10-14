@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block extra_head %}
+
+{% endblock extra_head %}
+
+{% block body %}
+  <div class="container">
+    <h2>Sign up</h2>
+    <form method="post" action="{% url 'edit_profile' request.user.username %}" data-validate-username-url="{% url 'validate_username' %}">
+      {% csrf_token %}
+
+    {% for error in user_form.non_field_errors %}
+        <div class="alert alert-warning" role="alert">{{ error }}</div>
+    {% endfor %}
+    {% csrf_token %}
+    {% for field in user_form.visible_fields %}
+        <div class="form-group">
+        {{ field.label }}
+        {{ field.errors }}
+        
+        {{ field|add_class:'form-control'}}
+        {% if field.help_text %}
+            <p class="help_text">{{ field.help_text }}</p>
+        {% endif %}
+        </div>
+    {% endfor %}
+
+    {% for error in friend_form.non_field_errors %}
+        <div class="alert alert-warning" role="alert">{{ error }}</div>
+    {% endfor %}
+    {% csrf_token %}
+    {% for field in friend_form.visible_fields %}
+        <div class="form-group">
+        {{ field.label }}
+        {{ field.errors }}
+        {{ field|add_class:'form-control' }}
+        {% if field.help_text %}
+            <p class="help_text">{{ field.help_text }}</p>
+        {% endif %}
+        </div>
+    {% endfor %}
+      <button type="submit" class="btn btn-primary">Update info</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block extra_script %}
+
+  <script>
+    $("#id_username").change(function () {
+      var form = $(this).closest("form");
+      $.ajax({
+        url: form.attr("data-validate-username-url"),
+        data: form.serialize(),
+        dataType: 'json',
+        success: function (data) {
+          if (data.is_taken) {
+            alert(data.error_message);
+          }
+        }
+      });
+      document.getElementById("id_username").value = "";
+    });
+  </script>
+{% endblock extra_script %}

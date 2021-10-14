@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'googlemaps',
     'phonenumber_field',
     'rest_framework',
-    
+    'safedelete',
+
     'accounts',
     'core',
 ]
@@ -88,7 +89,7 @@ WSGI_APPLICATION = 'friendSite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mydatabase',
         'USER': 'root',
         'PASSWORD': 'root',
@@ -160,8 +161,7 @@ LOGIN_URL = '/account/login'
 LOGIN_REDIRECT_URL = '/account/profile'
 LOGOUT_REDIRECT_URL = '/account/login'
 
-BASE_COUNTRY = "TR"
-
+BASE_COUNTRY = 'TR'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -171,7 +171,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kursat.felsen@gmail.com'
 EMAIL_HOST_PASSWORD = 'bursaistanbulankara'
 
-DEFAULT_FROM_EMAIL = "kursat.felsen@gmail.com"
+DEFAULT_FROM_EMAIL = 'kursat.felsen@gmail.com'
 
 
 TIME_INPUT_FORMATS = [

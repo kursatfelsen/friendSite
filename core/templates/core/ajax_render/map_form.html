@@ -6,13 +6,11 @@
         placeholder="Search Box"
     />
 <div id="map"></div>
-<form action="{% url 'new_event_post' %}" id="address-form" method="POST">
+<form action="{% url 'location_set' event_id %}" id="address-form" method="POST">
     {% csrf_token %}
     {% for field in form_location.visible_fields %}
         <div class="form-group">
-        {{ field.label }}
-        {{ field.errors }}
-        {{ field }}
+        {{ field.as_hidden }}
         {% if field.help_text %}
             <p class="help_text">{{ field.help_text }}</p>
         {% endif %}

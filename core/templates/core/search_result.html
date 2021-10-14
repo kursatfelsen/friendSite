@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% block body %}
-<h1 class="text-center">Search results for: {{search_word}}</h1>
+<h1 class="text-center">Search results for: {{ search_word }}</h1>
 <hr>
 {% if groups %}
+<h2 style="font-size:25px;">Groups <span class="badge bg-primary float-right rounded-pill">{{groups | length}}</span></h2>
 <table class="table table-hover" id="groupTable">
     <thead>
         <tr class="header">
         <th scope="col" onclick="sortTable('groupTable',0)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Name</th>
         <th scope="col" onclick="sortTable('groupTable',1)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Creator</th>
-        <span class="badge bg-primary float-right rounded-pill">{{groups | length}}</span>
         </tr>
         <tbody>
             {% for group in groups %}
                 {% if group.is_private %}
-                    {% if request.user.friend.get in group.friend_set.all %}
+                    {% if request.user.friend in group.friend_set.all %}
                         <tr>
-                        <td><a href="{% url 'detail' group.id %}">{{group.name}}</a></td>
-                        <td>{{group.creator}}</td>
+                        <td><a href="{% url 'detail' group.id %}">{{ group.name }}</a></td>
+                        <td>{{ group.creator }}</td>
                         </tr>
                     {% endif %}
                 {% else %}
                 <tr>
-                <td><a href="{% url 'detail' group.id %}">{{group.name}}</a></td>
-                <td>{{group.creator}}</td>
+                <td><a href="{% url 'detail' group.id %}">{{ group.name }}</a></td>
+                <td>{{ group.creator }}</td>
                 </tr>
                 {% endif %}
             {% endfor %}
@@ -33,16 +33,16 @@
 {% endif %}
 
 {% if friends %}
+<h2 style="font-size:25px;">Users <span class="badge bg-primary float-right rounded-pill">{{ friends | length }}</span></h2>
 <table class="table table-hover" id="friendTable">
     <thead>
         <tr class="header">
         <th scope="col" onclick="sortTable('friendTable',0)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Name</th>
-        <span class="badge bg-primary float-right rounded-pill">{{friends | length}}</span>
         </tr>
         <tbody>
             {% for friend in friends %}
                 <tr>
-                <td><a href="{% url 'profile' friend.user.username %}">{{friend.user.username}}</a></td>
+                <td><a href="{% url 'profile' friend.user.username %}">{{ friend.user.username }}</a></td>
                 </tr>
             {% endfor %}
 
@@ -53,6 +53,7 @@
 {% endif %}
 
 {% if events %}
+<h2 style="font-size:25px;">Events <span class="badge bg-primary float-right rounded-pill">{{ events | length }}</span></h2>
 <table class="table table-hover" id="eventTable">
     <thead>
         <tr class="header">
@@ -63,31 +64,30 @@
             <th scope="col" onclick="sortTable('eventTable',4)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Group</th>
             <th scope="col" onclick="sortTable('eventTable',5)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Creator</th>
             <th scope="col" onclick="sortTable('eventTable',6)" ><i class="bi bi-funnel"style="font-size:1.5rem;"></i> State</th>
-            <span class="badge bg-primary float-right rounded-pill">{{events | length}}</span>
         </tr>
         <tbody>
             {% for event in events %}
                 {% if event.group.is_private %}
-                    {% if request.user.friend.get in event.group.friend_set.all %}
+                    {% if request.user.friend in event.group.friend_set.all %}
                         <tr>
-                        <td><a href="{% url 'event_detail' event.id %}">{{event.name}}</a></td>
-                        <td>{{event.start_date}}</td>
-                        <td>{{event.end_date}}</td>
-                        <td>{% if event.location %}<a href="{% url 'location_detail' event.location.id%}">{% endif %}{{event.location}}</a></td>
-                        <td><a href="{% url 'detail' event.group.id %}">{{event.group}}</a></td>
-                        <td><a href="{% url 'profile' event.creator.user.id %}">{{event.creator}}</a></td>
-                        <td>{{event.get_state_display}}</td>
+                        <td><a href="{% url 'event_detail' event.id %}">{{ event.name }}</a></td>
+                        <td>{{ event.start_date }}</td>
+                        <td>{{ event.end_date }}</td>
+                        <td>{% if event.location %}<a href="{% url 'location_detail' event.location.id%}">{% endif %}{{ event.location }}</a></td>
+                        <td><a href="{% url 'detail' event.group.id %}">{{ event.group }}</a></td>
+                        <td><a href="{% url 'profile' event.creator.user.id %}">{{ event.creator }}</a></td>
+                        <td>{{ event.get_state_display }}</td>
                         </tr>
                     {% endif %}
                 {% else %}
                 <tr>
-                <td><a href="{% url 'event_detail' event.id %}">{{event.name}}</a></td>
-                <td>{{event.start_date}}</td>
-                <td>{{event.end_date}}</td>
-                <td>{% if event.location %}<a href="{% url 'location_detail' event.location.id%}">{% endif %}{{event.location}}</a></td>
-                <td><a href="{% url 'detail' event.group.id %}">{{event.group}}</a></td>
-                <td><a href="{% url 'profile' event.creator.user.id %}">{{event.creator}}</a></td>
-                <td>{{event.get_state_display}}</td>
+                <td><a href="{% url 'event_detail' event.id %}">{{ event.name }}</a></td>
+                <td>{{ event.start_date }}</td>
+                <td>{{ event.end_date }}</td>
+                <td>{% if event.location %}<a href="{% url 'location_detail' event.location.id%}">{% endif %}{{ event.location }}</a></td>
+                <td><a href="{% url 'detail' event.group.id %}">{{ event.group }}</a></td>
+                <td><a href="{% url 'profile' event.creator.user.id %}">{{ event.creator }}</a></td>
+                <td>{{ event.get_state_display }}</td>
                 </tr>
                 {% endif %}
             {% endfor %}
@@ -99,6 +99,7 @@
 {% endif %}
 
 {% if locations %}
+<h2 style="font-size:25px;">Locations <span class="badge bg-primary float-right rounded-pill">{{ locations | length }}</span></h2>
 <table id="locationTable" class="table table-hover">
     <thead>
         <tr class="header">
@@ -106,13 +107,13 @@
             <th scope="width:30%" onclick="sortTable('locationTable',1)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Type</th>
             <th scope="width:10%" onclick="sortTable('locationTable',2)"><i class="bi bi-funnel"style="font-size:1.5rem;"></i> Rating</th>
         </tr>
-        <span class="badge bg-primary float-right rounded-pill">{{locations | length}}</span>
+        
         <tbody>
     {% for location in locations %}
         <tr>
-        <td><a href="{% url 'location_detail' location.id %}">{{location.name}}</a></td>
-        <td>{{location.type}}</td>
-        <td>{{location.rating}}</td>
+        <td><a href="{% url 'location_detail' location.id %}">{{ location.name }}</a></td>
+        <td>{{ location.type }}</td>
+        <td>{{ location.rating }}</td>
         </tr>                        
     {% endfor %}
 

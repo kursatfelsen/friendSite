@@ -24,7 +24,7 @@
                 <div class="d-flex flex-start mt-4">
                   <img
                     class="rounded-circle shadow-1-strong me-3"
-                    src="{{comment.creator.img}}"
+                    src="{{ comment.creator.img }}"
                     alt="avatar"
                     width="65"
                     height="65"
@@ -33,25 +33,25 @@
                     <div>
                       <div class="d-flex justify-content-between align-items-center">
                         <p class="mb-1">
-                          {{comment.creator}} <span class="small">- {{comment.created_time |naturaltime }}</span>
+                          {{ comment.creator }} <span class="small">- {{ comment.created_time |naturaltime  }}</span>
                         </p>
-                        <span class="small"><button class="btn btn-primary" onclick=openCommentField({{comment.id}})>reply</button></span>
+                        <span class="small"><button class="btn btn-primary" onclick=openCommentField({{ comment.id }})>reply</button></span>
 
                         
                       </div>
                       <p class="small mb-0">
-                       {{comment.content}}
+                       {{ comment.content }}
                       </p>
-                      <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{comment.id}},true) ><i class="bi bi-arrow-up-circle-fill" style="font-size:1.5rem;{% is_liked comment.id request.user.friend.get.id %}" id ="like-{{comment.id}}" id ="like-{{comment.id}}"></i></button>
-                      <span>{{comment.comment_likes.total_likes}}</span>
-                      <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{comment.id}},false)><i class="bi bi-arrow-down-circle-fill" style="font-size:1.5rem;{% is_disliked comment.id request.user.friend.get.id %}" id ="dislike-{{comment.id}}"></i></button>
+                      <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{ comment.id }},true) ><i class="bi bi-arrow-up-circle-fill" style="font-size:1.5rem;{% is_liked comment.id request.user.friend.id %}" id ="like-{{ comment.id }}" id ="like-{{ comment.id }}"></i></button>
+                      <span>{{ comment.comment_likes.total_likes }}</span>
+                      <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{ comment.id }},false)><i class="bi bi-arrow-down-circle-fill" style="font-size:1.5rem;{% is_disliked comment.id request.user.friend.id %}" id ="dislike-{{ comment.id }}"></i></button>
                     </div>
                     {% for inner_comment in comment.comments.all %}
                     <div class="d-flex flex-start mt-4">
                       <a class="me-3" href="#">
                         <img
                           class="rounded-circle shadow-1-strong"
-                          src="{{inner_comment.creator.img}}"
+                          src="{{ inner_comment.creator.img }}"
                           alt="avatar"
                           width="65"
                           height="65"
@@ -61,20 +61,20 @@
                         <div>
                           <div class="d-flex justify-content-between align-items-center">
                             <p class="mb-1">
-                              {{inner_comment.creator}} <span class="small">- {{inner_comment.created_time |naturaltime }} | </span>
+                              {{ inner_comment.creator }} <span class="small">- {{ inner_comment.created_time |naturaltime  }} | </span>
                             </p>
                           </div>
                           <p class="small mb-0">
-                            {{inner_comment.content}}
+                            {{ inner_comment.content }}
                           </p>
-                          <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{inner_comment.id}},true) ><i class="bi bi-arrow-up-circle-fill" style="font-size:1.5rem;{% is_liked inner_comment.id request.user.friend.get.id %}" id ="like-{{comment.id}}" id ="like-{{comment.id}}"></i></button>
-                          <span>{{inner_comment.comment_likes.total_likes}}</span>
-                          <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{inner_comment.id}},false)><i class="bi bi-arrow-down-circle-fill" style="font-size:1.5rem;{% is_disliked inner_comment.id request.user.friend.get.id %}" id ="dislike-{{comment.id}}"></i></button>
+                          <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{ inner_comment.id }},true) ><i class="bi bi-arrow-up-circle-fill" style="font-size:1.5rem;{% is_liked inner_comment.id request.user.friend.id %}" id ="like-{{ comment.id }}" id ="like-{{ comment.id }}"></i></button>
+                          <span>{{ inner_comment.comment_likes.total_likes }}</span>
+                          <button class="btn" style="background-color:transparent;border-radius:3rem;" onclick=like({{ inner_comment.id }},false)><i class="bi bi-arrow-down-circle-fill" style="font-size:1.5rem;{% is_disliked inner_comment.id request.user.friend.id %}" id ="dislike-{{ comment.id }}"></i></button>
                         </div>
                       </div>
                     </div>
                     {% endfor %}
-                    <div id="{{comment.id}}-comment-input">
+                    <div id="{{ comment.id }}-comment-input">
                     </div>
                   </div>
                 </div>

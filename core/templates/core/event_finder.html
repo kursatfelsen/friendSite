@@ -2,9 +2,27 @@
 
 {% block body %}
 {% if error %}
-{{error}}
+{{ error }}
 {% else %}
-{{start_time}} - {{end_time}}
+<ul>
+{% for time in full_list %}
+<li>
+    <form action="{% url 'new_event_post' %}" method="GET">
+    {% for interval in time %}
+        {% if forloop.counter == 1 %}
+        <input type="text" value='{{interval}}' name="start_date">
+        {% else %}
+        <input type="text" value='{{interval}}' name="end_date">
+        {% endif %}
+    {% endfor %}
+    <input hidden type="text" name="group_id" value='{{group_id}}'>
+    <button type="submit">Try</button>
+    </form>
+</li>
+{% endfor %}
+</ul>
 {% endif %}
 
 {% endblock body %}
+
+{{ start_time }} - {{ end_time }}

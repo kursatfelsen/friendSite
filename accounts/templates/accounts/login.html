@@ -3,7 +3,7 @@
 {% block body %}
 
 <form action="{% url 'login' %}" method="POST">
-    {% csrf_token %}
+  {% csrf_token %}
   <div class="form-group">
     <label for="username">Username</label>
     <input type="username" class="form-control" name="username" aria-describedby="emailHelp" placeholder="Enter Username">
@@ -12,9 +12,7 @@
     <label for="password">Password</label>
     <input type="password" class="form-control" name="password" placeholder="Password">
   </div>
-
     <button type="submit" class="btn btn-primary">Login</button>
-
 </form>
 
 {% endblock body %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+{% for event in event_list %}
+<h2>Recommendation {{ forloop.counter }}</h2>
+<table class="table table-hover bg-white">
+    <tbody>
+      <tr>
+      <th scope="col">Event Name</th>
+      <td>{{event.name}}</td>
+      </tr>
+      <tr>
+      <th scope="col">Starting Time</th>
+      <td>{{ event.start_date }}</td>
+      </tr>
+      <tr>
+      <th scope="col">Ending Time</th>
+      <td>{{ event.end_date }}</td>
+      </tr>
+      <tr>
+      <th scope="col">Creator</th>
+      <td>{{ event.creator.user.username }}</td>
+      </tr>
+      <tr>
+      <th scope="col">Type</th>
+      <td>{{ event.get_type_display }}</td>
+      </tr>
+    </tbody>
+</table>
+<hr>
+{% endfor %}
+
+{% endblock body %}

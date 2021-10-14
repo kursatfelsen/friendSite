@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static  %}
+{% block extra_head %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/google_places.css' %}" />
+<script src="{% static 'js/google_places.js' %}"></script>
+{% endblock extra_head %}
+
+{% block body %}
+
+{% include "core/ajax_render/map_form.html" %}
+
+{% endblock body %}
+
+
+{% block extra_script %}
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCgcemZoVjBawCcvVhySBtDyjDYxc2Bb9k&callback=initAutocomplete&libraries=places&v=weekly" async></script>
+
+<script>
+
+// Initialize and add the map
+function initMap() {
+  // The location of place
+  // The map, centered at place
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 13,
+    center: {lat:39.925533,lng:32.866287},
+  });
+  initAutocomplete();
+  }
+</script>
+{% endblock %}

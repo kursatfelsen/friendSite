@@ -55,9 +55,9 @@
   </tr>
     {% for location in location_list %}
         <tr>
-        <td><a href="{% url 'location_detail' location.id %}">{{location.name}}</a></td>
-        <td>{{location.type}}</td>
-        <td>{{location.rating}}</td>
+        <td><a href="{% url 'location_detail' location.id %}">{{ location.name }}</a></td>
+        <td>{{ location.type }}</td>
+        <td>{{ location.rating }}</td>
         </tr>                        
     {% endfor %}
 

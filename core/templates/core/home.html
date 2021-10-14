@@ -18,10 +18,10 @@
                         <tbody>
                             {% for event in upcoming_events %}
                                 <tr>
-                                <td><a href="{% url 'event_detail' event.id %}">{{event.name}}</a></td>
-                                <td>{{event.location}}</td>
-                                <td>{{event.start_date | naturaltime}}</td>
-                                </tr>                        
+                                <td><a href="{% url 'event_detail' event.id %}">{{ event.name }}</a></td>
+                                <td>{% if event.location %}<a href="{% url 'location_detail' event.location.id %}">{{ event.location }}</a>{% else %} {{ event.location }}{% endif %}</td>
+                                <td>{{ event.start_date | naturaltime }}</td>
+                                </tr>
                             {% endfor %}
 
                         </tbody>
@@ -33,7 +33,7 @@
 
             <p>
                 <a href="{% url 'new_group' %}" class="btn btn-primary my-2">Create a new group</a>
-                <a href="#" class="btn btn-secondary my-2 ml-3">Join a new group</a>
+                <a href="{% url 'recommend_event' %}" class="btn btn-danger"> Get an event recommendation</a>
             </p>
             </div>
         </section>
@@ -45,16 +45,16 @@
                     {% for group in groups %}
                         <div class="col-md-4" >
                             <div class="card mb-4 box-shadow">
-                                <a href="{% url 'detail' group.id %}"><img class="card-img-top" src="{{group.img_url}}" style="height:15em;" alt="Card image cap"></a>
-                                <div class="card-body "style="background-color: #123c69;">{% if group.is_private %}<span class="float-right text-white">Private</span>{% endif %}
-                                <a href="{% url 'detail' group.id %}"><h5 class="card-title text-white"><b>{{group.name}}</b></h5></a>
-                                <p class="card-text"> Group Creator: {{group.creator}}</p>
+                                <a href="{% url 'detail' group.id %}"><img class="card-img-top" src="{{ group.img_url }}" style="height:15em;" alt="Card image cap"></a>
+                                <div class="card-body "style="background-color: #123c69;">
+                                <a href="{% url 'detail' group.id %}"><h5 class="card-title text-white"><b>{{ group.name }}</b>{% if group.is_private %}<span class="float-right text-white"> | Private</span>{% endif %}</h5></a>
+                                <p class="card-text"> Group Creator: {{ group.creator }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group">
                                     <a href="{% url 'detail' group.id %}"><button type="button" class="btn btn-sm btn-outline-primary mr-2" name="view-button">View</button></a>
                                     <a href="{% url 'edit_group' group.id %}"><button type="button" class="btn btn-sm btn-outline-primary" name="edit-button">Edit</button></a>
                                     </div>
-                                    <small class="text-white">Next Event: {{first_event.start_date | naturaltime}}</small>
+                                    <small class="text-white">{% if group.first_upcoming_event %} Next Event: {{ group.first_upcoming_event.start_date | naturaltime }}{% else %} There are no upcoming events.{% endif %}</small>
                                 </div>
                                 </div>
                             </div>
@@ -63,7 +63,6 @@
                 {% else %}
                     <h2>PLEASE LOGIN</h2>
                 {% endif %}
-
                 </div>
             </div>
         </div>

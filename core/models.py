@@ -1,11 +1,17 @@
+import heapq
 
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils import timezone
-
 from phonenumber_field.modelfields import PhoneNumberField
+from safedelete.models import SOFT_DELETE_CASCADE, SafeDeleteModel
+
+from .algorithms import k_means_event
 
 from .managers import *
+
+def calculate_distance(x, y):
+    return ((x[0]**2 - y[0]**2) + (x[1]**2 - y[1]**2) + (x[2]**2 - y[2]**2))**(1/3)
 
 
 class FriendGroup(models.Model):
@@ -13,8 +19,7 @@ class FriendGroup(models.Model):
     # TODO Wrong foreign key must be friend not user
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     img_url = models.TextField(blank=True)
-    is_private = models.BooleanField(blank=True, default=False)
-    is_active = models.BooleanField(default=True)
+    is_private = models.BooleanField(default=False)
     # friend_set for friendGroup field in Friend
     # event_set for group field in Event
 
@@ -24,18 +29,22 @@ class FriendGroup(models.Model):
     def get_friends(self):
         return list(self.friend_set.all())
 
+    def first_upcoming_event(self):
+        if self.event_set.all():
+            return self.event_set.all()[0]
+
+
 
 class Friend(models.Model):
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='friend')
     friendGroup = models.ManyToManyField(FriendGroup, blank=True)
     friendWith = models.ManyToManyField('self', blank=True)
     description = models.TextField(blank=True)
     img = models.TextField(blank=True)
-    address = models.CharField(max_length=200, blank=True, null=True)
+    address = models.CharField(max_length=200, blank=True)
     fullname = models.CharField(max_length=30, blank=True)
     phone = PhoneNumberField(blank=True)
-    is_active = models.BooleanField(default=True)
     # event for creator
     # event_set for group field in Event
     # attending_set for attender field in Event
@@ -62,28 +71,52 @@ class Friend(models.Model):
             return True
         return False
 
+    def recommend_event(self):
+        event_clusters, kmeans, cluster_labels = k_means_event(self)
+        distances = []
+        centers = kmeans.cluster_centers_
+        if centers == []:
+            return
+        for friend in self.friendWith.all():
+            if len(friend.attending_set.all()) == 0:
+                continue
+            friend_event_clusters, friend_kmeans, friend_cluster_labels = k_means_event(friend)
+            friend_centers = friend_kmeans.cluster_centers_
+            if friend_centers == []:
+                continue
+            for center in centers:
+                counter = 0
+                for friend_center in friend_centers:
+                    distance = calculate_distance(friend_center,center)
+                    heapq.heappush(distances, (distance, friend_cluster_labels[counter]))
+                    counter += 1
+
+        event_id_set = heapq.heappop(distances)[1]
+        return event_id_set
+                
+
 
 class Location(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(
-        verbose_name="name", max_length=200, null=True, blank=True)
+        verbose_name='name', max_length=200, blank=True)
     address = models.CharField(
-        verbose_name="Address", max_length=300, null=True, blank=True)
+        verbose_name='Address', max_length=300, blank=True)
     phone_number = models.CharField(
-        verbose_name="Phone", max_length=100, null=True, blank=True)
+        verbose_name='Phone', max_length=100, blank=True)
     website = models.CharField(
-        verbose_name="Website", max_length=1000, null=True, blank=True)
+        verbose_name='Website', max_length=1000, blank=True)
     rating = models.CharField(
-        verbose_name="Rating", max_length=40, null=True, blank=True)
+        verbose_name='Rating', max_length=40, blank=True)
     type = models.CharField(
-        verbose_name="Type", max_length=100, null=True, blank=True)
+        verbose_name='Type', max_length=100, blank=True)
     photo_url = models.CharField(
-        verbose_name="Photo", max_length=2000, null=True, blank=True)
+        verbose_name='Photo', max_length=2000, blank=True)
     longitude = models.CharField(
-        verbose_name="Longitude", max_length=50, null=True, blank=True)
+        verbose_name='Longitude', max_length=50, blank=True)
     latitude = models.CharField(
-        verbose_name="Latitude", max_length=50, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+        verbose_name='Latitude', max_length=50, blank=True)
+    
     def __str__(self):
         return self.name
 
@@ -91,16 +124,14 @@ class Location(models.Model):
 class Calendar(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    visible_for = models.ManyToManyField(User, related_name="visible_for")
-    editable_by = models.ManyToManyField(User, related_name="editable_by")
+    visible_for = models.ManyToManyField(User, related_name='visible_for')
+    editable_by = models.ManyToManyField(User, related_name='editable_by')
 
     def __str__(self):
         return self.name
 
 
 class Event(models.Model):
-    class Meta:
-        ordering = ('state', 'start_date')
     PROPOSED = 'P1'
     PLANNED = 'P2'
     HAPPENING = 'H1'
@@ -113,7 +144,31 @@ class Event(models.Model):
         (HAPPENED, 'Happened'),
         (NOT_HAPPENED, 'Not Happened'),
     ]
-    name = models.TextField(max_length=50)
+    NONE = '0'
+    BREAKFAST = '1'
+    LUNCH = '2'
+    DINNER = '3'
+    MEETING = '4'
+    ENTERTAINMENT = '5'
+    OUTDOOR = '6'
+    VACATION = '7'
+    WORK = '8'
+    STUDY = '9'
+    TYPES = [
+        (NONE,'None'),
+        (BREAKFAST,'Breakfast'),
+        (LUNCH,'Lunch'),
+        (DINNER,'Dinner'),
+        (ENTERTAINMENT,'Entertainment'),
+        (WORK,'Work'),
+        (MEETING,'Meeting'),
+        (OUTDOOR,'Outdoor'),
+        (VACATION,'Vacation'),
+        (STUDY,'Study'),
+    ]
+
+    name = models.CharField(max_length=50)
+    description = models.TextField(max_length=2000,blank=True)
     creator = models.ForeignKey(Friend, blank=True, on_delete=models.CASCADE)
     attender = models.ManyToManyField(
         Friend, blank=True, related_name='attending_set')
@@ -129,21 +184,35 @@ class Event(models.Model):
         max_length=2,
         choices=STATE_CHOICES,
         default=PROPOSED,
+        blank=True
+    )
+    type = models.CharField(
+        max_length=1,
+        choices=TYPES,
+        default=NONE,
     )
     ranking = models.IntegerField(null=True, default=0)
     # vote_set for event field in Vote
-    is_active = models.BooleanField(default=True)
+    objects = models.Manager()
+    proposed_events = ProposedEventManager()
+    planned_events = PlannedEventManager()
+    happening_events = HappeningEventManager()
+    happened_events = HappenedEventManager()
+    not_happened_events = NotHappenedEventManager()
+
+    class Meta:
+        ordering = ('state', 'start_date')
 
     def __str__(self):
         return self.name
 
-    def getYeas(self):
-        return Vote.objects.filter(event__id=self.id, status=True).count()
+    def get_yeah_votes(self):
+        return Vote.yeah_votes.filter(event__id=self.id).count()
 
-    def getNas(self):
-        return Vote.objects.filter(event__id=self.id, status=False).count()
+    def get_nah_votes(self):
+        return Vote.nah_votes.filter(event__id=self.id).count()
 
-    def determineState(self):
+    def determine_state(self):
         if self.state == 'P2':
             if timezone.now() > self.start_date and timezone.now() < self.end_date:
                 self.state = 'H1'
@@ -164,8 +233,10 @@ class EventComment(models.Model):
     comments = models.ManyToManyField(
         'self', related_name='has_comments', symmetrical=False, blank=True)
     is_inner_comment = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f"{self.creator}'s comment on {self.event}"
+    
 
 class EventCommentLike(models.Model):
     liker = models.ForeignKey(
@@ -173,14 +244,18 @@ class EventCommentLike(models.Model):
     comment = models.ForeignKey(
         EventComment, on_delete=models.CASCADE, related_name='comment_likes')
     like_or_dislike = models.BooleanField(default=True)
-    likes = EventCommentLikeManager()
 
+    likes = EventCommentLikeManager()
+    
 
 class Vote(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     friend = models.ForeignKey(Friend, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+
+    yeah_votes = YeahVoteManager()
+    nah_votes = NahVoteManager()
+    objects = models.Manager()
 
     def __str__(self):
         return f"{self.friend}'s vote on {self.event}: {self.status}"
@@ -213,9 +288,9 @@ class GroupInvitation(models.Model):
 class Badge(models.Model):
     #owner = models.ForeignKey(Friend, on_delete=models.CASCADE,related_name='badges')
     name = models.CharField(max_length=30)
-    description = models.TextField(max_length=200, null=True)
+    description = models.TextField(max_length=200)
     img = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='images/', null=True)
+    image = models.ImageField(upload_to='images/', blank=True)
 
     def __str__(self):
         return self.name
@@ -229,3 +304,25 @@ class BadgeFriendRelationship(models.Model):
 
     def __str__(self):
         return f"{self.owner} has {self.badge.name}"
+
+
+    # def recommend_event(self):
+    #     event_clusters, kmeans, cluster_labels = k_means_event(self)
+    #     distances = []
+    #     centers = kmeans.cluster_centers_
+    #     if centers == []:
+    #         return
+    #     for friend in self.friendWith.all():
+    #         if len(friend.attending_set.all()) == 0:
+    #             continue
+    #         friend_event_clusters, friend_kmeans, friend_cluster_labels = k_means_event(friend)
+    #         friend_centers = friend_kmeans.cluster_centers_
+    #         if friend_centers == []:
+    #             continue
+    #         for center in centers:
+    #             for friend_center in friend_centers:
+    #                 distance = calculate_distance(friend_center,center)
+    #                 heapq.heappush(distances, (distance, friend))
+
+    #     value = heapq.heappop(distances)
+    #     print(value)

@@ -5,13 +5,13 @@
 <div class="row d-flex align-items-stretch">
     <div class="card border-primary mx-auto " style="width: 30rem;">
       <div class="card-header">
-        {{event.name}}
+        {{ event.name }}
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item"><b>Starting Time</b><span class="float-right">{{event.start_date}} - {{event.start_time}}</span></li>
-        <li class="list-group-item"><b>Ending Time</b><span class="float-right">{{event.end_date}} - {{event.end_time}}</span></li>
-        <li class="list-group-item"><b>State</b><span class="float-right">{{event.get_state_display}}</span></li>
-        <li class="list-group-item"><b>Creator</b><span class="float-right">{{event.creator.user.username}}</span></li>
+        <li class="list-group-item"><b>Starting Time</b><span class="float-right">{{ event.start_date }} - {{ event.start_time }}</span></li>
+        <li class="list-group-item"><b>Ending Time</b><span class="float-right">{{ event.end_date }} - {{ event.end_time }}</span></li>
+        <li class="list-group-item"><b>State</b><span class="float-right">{{ event.get_state_display }}</span></li>
+        <li class="list-group-item"><b>Creator</b><span class="float-right">{{ event.creator.user.username }}</span></li>
       </ul>
     </div>
   {% if event.state != "P1" %}
@@ -21,7 +21,7 @@
       </div>
       <ul class="list-group list-group-flush">
         {% for attender in event.attender.all %}
-        <li class="list-group-item">{{attender.user.username}}</li>
+        <li class="list-group-item">{{ attender.user.username }}</li>
         {% endfor %}
       </ul>
     </div>

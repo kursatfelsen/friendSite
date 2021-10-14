@@ -1,10 +1,10 @@
-<div class="card border-primary mx-auto " style="width: 30rem;">
+<div class="card border-primary">
     <div class="card-header">
     Attenders
     </div>
     <ul class="list-group list-group-flush">
     {% for attender in event.attender.all %}
-    <li class="list-group-item">{{attender.user.username}}</li>
+    <li class="list-group-item">{{ attender.user.username }}</li>
     {% endfor %}
     </ul>
 </div>

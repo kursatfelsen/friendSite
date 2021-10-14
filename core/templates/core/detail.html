@@ -3,145 +3,129 @@
 {% block extra_head %}
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="{% static 'css/group_profiles.css' %}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css" integrity="sha256-uq9PNlMzB+1h01Ij9cx7zeE2OR2pLAfRw3uUUOOPKdA=" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js" integrity="sha256-rPPF6R+AH/Gilj2aC00ZAuB2EKmnEjXlEWx5MkAp7bw=" crossorigin="anonymous"></script>
-
-    <link href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13.1/css/all.css' rel='stylesheet'>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css" integrity="sha256-uq9PNlMzB+1h01Ij9cx7zeE2OR2pLAfRw3uUUOOPKdA=" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js" integrity="sha256-rPPF6R+AH/Gilj2aC00ZAuB2EKmnEjXlEWx5MkAp7bw=" crossorigin="anonymous"></script>
+<link href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13.1/css/all.css' rel='stylesheet'>
 
 {% endblock extra_head %}
 
 {% block body %}
 <div class="container bg-light" id="profile-main">
-    <div class="main-body">
-        <br>
-
-          <div class="row gutters-sm">
-                <div class="row text-center"><h1>{{group.name}}'s calendar</h1></div>
-                <div class="container-fluid">
-                    <div class="row">
-                        <div id="calendar" class="d-none d-md-flex col-md-4 col-lg-12 p-3" style="min-height: 35em;"></div>
-                    </div>
-                </div>
+  <div class="main-body">
+    <br>
+    <div class="row gutters-sm">
+      <div class="row text-center">
+        <h1>{{ group.name }}'s calendar</h1>
+      </div>
+      <div class="container-fluid">
+          <div class="row">
+              <div id="calendar" class="d-none d-md-flex col-md-4 col-lg-12 p-3" style="min-height: 35em;"></div>
           </div>
+      </div>
     </div>
+  </div>
 </div>
-
-    <div class="container">
+<br>
+<div class="container">
+  <div class="row">
+    <div class="row text-center">
+      <div class="col align-content-center">
         <div class="row">
-            <div class="row text-center">
-                <div class="col align-content-center">
-                    <div class="row">
-                    <p>Event accomplishment rate: {{event_accomplishment_rate|floatformat:2}}</p>
-                    </div>
-                    {% if event_accomplishment_rate < 0.4 %}
-                    <div class="row">
-                        <p>Isn't it a bit low? Did you try our event planner?</p>
-                    </div>
-                    {% elif event_accomplishment_rate > 0.7 %}
-                    <div class="row">
-                        <p>Wow, your group should organize NATO meetings!</p>
-                    </div>
-                    {% else %}
-                    <div class="row">
-                        <p>Some organizes, some declines. Like always...</p>
-                    </div>
-                    {% endif %}
-
-                    <div class="row">
-                    <a href="{% url 'new_event_get' group.id %}" class="btn mb-5 mx-auto col-12 col-sm-4"id="create-event-button">Create a new event</a>
-                    </div>
-                </div>
-                <div class="col align-content-center">
-                    <form action="{% url 'test' group.id %}" method="GET">
-                        <div class="form-group">
-                        <div class="row">
-                        <label for="length">Choose length for event</label>
-                        </div>
-                        <div class="row">
-                        <div class="col-16">
-                        <input style="background:white" type="range" class="custom-range" min="1" value="1" max="24" id="length" name="length" step="1" oninput="this.nextElementSibling.value = this.value">
-                        <output>24</output>
-                        </div>
-                        </div>
-                        </div>
-                        <button type="submit" class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Find an interval</button>
-                    </form>
-                </div>
-            </div>
+        <p>Event accomplishment rate: {{ event_accomplishment_rate|floatformat:2 }}</p>
         </div>
+        {% if event_accomplishment_rate < 0.4 %}
+        <div class="row">
+          <p>Isn't it a bit low? Did you try our event planner?</p>
+        </div>
+        {% elif event_accomplishment_rate > 0.7 %}
+        <div class="row">
+          <p>Wow, your group should organize NATO meetings!</p>
+        </div>
+        {% else %}
+        <div class="row">
+          <p>Some organizes, some declines. Like always...</p>
+        </div>
+        {% endif %}
+        <div class="row">
+          <form action="{% url 'new_event_get' %}" method="GET"> <button class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Create a new event</button></form>
+        </div>
+      </div>
+      <div class="col align-content-center">
+        <form action="{% url 'test' group.id %}" method="GET">
+          <div class="form-group">
+            <div class="row">
+              <label for="length">Choose length for event</label>
+            </div>
+            <div class="row">
+              <div class="col-16">
+                <input style="background:white" type="range" class="custom-range" min="1" value="1" max="24" id="length" name="length" step="1" oninput="this.nextElementSibling.value = this.value">
+                <output>1</output>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <label for="length">Choose length for pause before and after event</label>
+            </div>
+            <div class="row">
+              <div class="col-16">
+                <input style="background:white" type="range" class="custom-range" min="1" value="1" max="6" id="length_for_pause" name="length_for_pause" step="1" oninput="this.nextElementSibling.value = this.value">
+                <output>1</output>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Find an interval</button>
+        </form>
+      </div>
     </div>
-        <div class="row">
-            <div class="col-md">
-                <div class="card shadow p-3 mb-3" style="width: 36rem;">
-                    <div class="card-header">
-                        Events in this group
-                    </div>
-                    <ul class="list-group list-group-flush " id="events-all">
-                    {% include 'core/ajax_render/event_pagination.html' %}
-                    </ul>
-                </div>
-                <nav aria-label="..." >
-                    <ul class="pagination pagination-sm justify-content-center">
-                        {% for i in page_list_event %}
-                        <li class="page-item" id="pagination-event-li-{{i}}"><a class="page-link" onclick=paginate_event({{i}}) >{{i}}</a></li>
-                        {% endfor %}
-                    </ul>
-                </nav>
-            </div>
-
-            <div class="col-md">
-                <div class="card float-right shadow p-3 mb-3" style="width: 36rem;">
-                    <div class="card-header">
-                        Dismiss friends
-                    </div>
-                    <ul class="list-group list-group-flush" id="friend-list-add">
-                    {% for friend in group.get_friends %}
-                        {% if friend.user == request.user or group.creator == friend.user %}
-                        {% else %}
-                            <li class="list-group-item" id="{{friend.user.id}}">{{friend.user}}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{friend.user.id}},{{group.id}}) class="btn float-right" name="dismiss-button">Dismiss</button></li>
-                        {% endif %}
-
-                    {% endfor %}
-                    </ul>
-                    <div class="card-footer">
-                        <h5 id="new-user-select-h5"  {% if friends|length %}{% else %} style="display:none;"{% endif %}>Add a new friend</h5>
-                        <select name="new_user" id="new-user-select" {% if friends|length %}{% else %} style="display:none;"{% endif %}>
-                            {% for friend in friends %}
-                            <option value="{{friend.user.id}}" id="new-user-option-{{friend.user.id}}">{{friend.user.username}}</option>
-                            {% endfor %}
-                        </select>
-                        <button {% if friends|length %}{% else %} style="display:none;"{% endif %} onclick=addUserToGroup() class="btn" type="submit" id="new-user-select-button">Add friend</button>
-                        <p id ="new-user-select-p"  {% if friends|length %} style="display:none;"{% else %}{% endif %}> There are no friends that you can add.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-                    <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-sm-8 col-lg-6">
-                    <!-- Section Heading-->
-                    <div class="section_heading text-center wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
-                        
-                        <h1 class="effect-underline">Friends in the group</h1>
-                        <br>
-                        <div class="line"></div>
-                    </div>
-                    </div>
-                </div>
-                <div class="row" id="friend-list">
-                    {% include 'core/ajax_render/user_pagination.html' %}
-                    
-                    <!-- Single Advisor-->
-                </div>
-                <nav aria-label="..." >
-                    <ul class="pagination pagination-sm justify-content-center">
-                        {% for i in page_list %}
-                        <li class="page-item" id="pagination-li-{{i}}"><a class="page-link" onclick=paginate_user({{i}}) >{{i}}</a></li>
-                        {% endfor %}
-                    </ul>
-                </nav>
-            </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md" id="events-all">
+    {% include 'core/ajax_render/event_pagination.html' %}
+  </div>
+  <div class="col-md">
+    <br> <br>
+    <div class="card float-right shadow p-3 mb-3" style="width: 38rem;">
+      <div class="card-header">
+          Dismiss friends
+      </div>
+      <ul class="list-group list-group-flush" id="friend-list-add">
+      {% for friend in group.get_friends %}
+          {% if friend.user == request.user or group.creator == friend.user %}
+          {% else %}
+              <li class="list-group-item" id="{{ friend.user.id }}">{{ friend.user }}<button dismiss-user="{% url 'dismiss' %}" onclick=dismiss({{ friend.user.id }},{{ group.id }}) class="btn float-right" name="dismiss-button">Dismiss</button></li>
+          {% endif %}
+      {% endfor %}
+      </ul>
+      <div class="card-footer">
+        <h5 id="new-user-select-h5"  {% if friends_that_are_not_in_group|length %}{% else %} style="display:none;"{% endif %}>Add a new friend</h5>
+        <select name="new_user" id="new-user-select" {% if friends_that_are_not_in_group|length %}{% else %} style="display:none;"{% endif %}>
+          {% for friend in friends_that_are_not_in_group %}
+          <option value="{{ friend.user.id }}" id="new-user-option-{{ friend.user.id }}">{{ friend.user.username }}</option>
+          {% endfor %}
+        </select>
+        <button {% if friends_that_are_not_in_group|length %}{% else %} style="display:none;"{% endif %} onclick=addUserToGroup() class="btn" type="submit" id="new-user-select-button">Add friend</button>
+        <p id ="new-user-select-p"  {% if friends_that_are_not_in_group|length %} style="display:none;"{% else %}{% endif %}> There are no friends that you can add.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-8 col-lg-6">
+      <div class="section_heading text-center wow fadeInUp" data-wow-delay="0.2s" style="visibility: visible; animation-delay: 0.2s; animation-name: fadeInUp;">
+        <h1 class="effect-underline">Friends in the group</h1>
         <br>
+        <div class="line"></div>
+      </div>
+    </div>
+  </div>
+  <div class="row" id="friend-list">
+    {% include 'core/ajax_render/user_pagination.html' %}
+  </div>
+</div>
+<br>
 {% endblock body %}
 
 {% block extra_script %}
@@ -159,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
         events:[
         {% for i in all_events %}
         {
-            title: "{{ i.name}}",
+            title: "{{ i.name }}",
             start: '{{ i.start_date|date:"Y-m-d" }}',
             end: '{{ i.end_date|date:"Y-m-d" }}',
             url: '{% url 'event_detail' i.id %}',
@@ -201,7 +185,7 @@ function vote(u_id, e_id, status){
     }
 
 function addUserToGroup(){
-        g_id = {{group.id}};
+        g_id = {{ group.id }};
         $.ajax({
             url: {% url 'addUserToGroup' %},
             type: "GET",
@@ -252,7 +236,7 @@ function paginate_user(page) {
         type: "get",
         data: {
             'page': page,
-            'group': {{group.id}},
+            'group': {{ group.id }},
         },
         success: function (data) {
             jQuery('#friend-list').html(data);
@@ -260,13 +244,14 @@ function paginate_user(page) {
     });
 }
 
-function paginate_event(page) {
+function paginate_event(page,event_type) {
     $.ajax({
         url: "{% url 'paginate_event' %}",
         type: "get",
         data: {
             'page': page,
-            'group': {{group.id}},
+            'group': {{ group.id }},
+            'event_type': event_type,
         },
         success: function (data) {
             jQuery('#events-all').html(data);

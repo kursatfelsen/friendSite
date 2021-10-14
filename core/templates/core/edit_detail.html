@@ -7,7 +7,7 @@
 {% block body %}
 <form action="{% url 'edit_group' group.id %}" method="POST">
 {% csrf_token %}
-{{form.as_p}}
+{{ form.as_p }}
 <button class="btn btn-success"> Update the group</button>
 </form>
 

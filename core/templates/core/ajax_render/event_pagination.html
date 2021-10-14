@@ -1,74 +1,106 @@
-{% for event in events %}
-    {% if event.state == "P1" %}
-    <li class="list-group-item ">
-        <div id="list-group-item-{{event.id}}">
-            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">{{event.get_state_display}}<i class="bi bi-hourglass" name="event-icon"></i></span>
-            <hr>
-            <p>Yeah: <input disabled id="{{event.id}}-1" value="{{ event.getYeas }}"><button class="btn float-right" name="yeah-button" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},1)>Vote Yeah</button></p>
-            <p>Na: <input  disabled id="{{event.id}}-0" value="{{ event.getNas }}"><button class="btn float-right" name="no-button" vote-event="{% url 'vote' %}" onclick=vote({{user.id}},{{event.id}},0)>Vote No</button></p>
-        </div>
-        <p>Invite Link: {{ request.scheme }}://{{ request.get_host }}{% url 'event_join' event.id %}</p>
-        {% if event.creator.user.id == user.id %}
-            <button onclick=plan({{event.id}}) id="event-is-on-{{event.id}}" class="btn" name="plan-button"> Event is planned!</button>
-            <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right" name="edit-event-button">Edit</button></a>
-            <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1" name="delete-event-button">Delete</button></a>
-        {% endif %}
-    </li>
-    {% elif event.state == "P2" %}
-    <li class="list-group-item">
-        <div id="list-group-item-{{event.id}}">
-            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">{{event.get_state_display}}<i class="bi bi-hourglass-top" name="event-icon"></i></span>
-            <hr>
-            <h6>Attenders:</h6>
-            <div class="card">
-                <ul class="list-group">
-                {% for attender in event.attender.all %}
-                    <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{attender.user}}</a></li>
-                {% endfor %}
-                </ul>
-            </div>
-            <br>
-        </div>
-        <p>Invite Link: {{ request.scheme }}://{{ request.get_host }}{% url 'event_join' event.id %}</p>
-    </li>
-    {% elif event.state == "H1" %}
-    <li class="list-group-item">
-        <div id="list-group-item-{{event.id}}">
-            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">{{event.get_state_display}}<i class="bi bi-hourglass-split" name="event-icon"></i></span>
-            <hr>
-            <h6>Attenders:</h6>
-            <div class="card">
-                <ul class="list-group">
-                {% for attender in event.attender.all %}
-                    <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{attender.user}}</a></li>
-                {% endfor %}
-                </ul>
-            </div>
-            <br>
-        </div>
-    </li>
-    {% elif event.state == "H2" %}
-    <li class="list-group-item">
-        <div id="list-group-item-{{event.id}}">
-            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">{{event.get_state_display}}<i class="bi bi-hourglass-bottom" name="event-icon"></i></span>
-            <hr>
-            <h6>Attenders:</h6>
-            <div class="card">
-                <ul class="list-group">
-                {% for attender in event.attender.all %}
-                    <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{attender.user}}</a></li>
-                {% endfor %}
-                </ul>
-            </div>
-            <br>
-        </div>
-    </li>
-    {% elif event.state == "N" %}
-    <li class="list-group-item">
-        <div id="list-group-item-{{event.id}}">
-            <a href="{% url 'event_detail' event.id %}">{{event}} </a><span class="float-right" id="status-{{event.id}}">{{event.get_state_display}}<i class="bi bi-x-lg" name="event-icon"></i></span>
-            <hr>
-        </div>
-    </li>
-    {% endif %}
-{% endfor %}
+<ul class="nav nav-pills  mb-2">
+  <li class="nav-item">
+    <a class="nav-link {% if event_objects_type == 'P1' %}active {% endif %}" aria-current="page" onclick=paginate_event(1,'P1')>Proposed</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if event_objects_type == 'P2' %}active{% endif %}" onclick=paginate_event(1,'P2') >Planned</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if event_objects_type == 'H1' %}active{% endif %}" onclick=paginate_event(1,'H1')>Happening</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if event_objects_type == 'H2' %}active{% endif %}" onclick=paginate_event(1,'H2')>Happened</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if event_objects_type == 'N' %}active{% endif %} " onclick=paginate_event(1,'N')>Not Happened</a>
+  </li>
+</ul>
+<div class="card shadow p-3 mb-3" style="width: 38rem;">
+    <div class="card-header">
+        Events in this group
+    </div>
+    <ul class="list-group list-group-flush ">
+        {% for event in events %}
+            {% if event.state == "P1" %}
+            <li class="list-group-item ">
+                <div id="list-group-item-{{ event.id }}">
+                    <a href="{% url 'event_detail' event.id %}">{{ event }} </a><span class="float-right" id="status-{{ event.id }}">{{ event.get_state_display }}<i class="bi bi-hourglass" name="event-icon"></i></span>
+                    <hr>
+                    <p>Yeah: <input disabled id="{{ event.id }}-1" value="{{ event.get_yeah_votes }}"><button class="btn float-right" name="yeah-button" vote-event="{% url 'vote' %}" onclick=vote({{ user.id }},{{ event.id }},1)>Vote Yeah</button></p>
+                    <p>Na: <input  disabled id="{{ event.id }}-0" value="{{ event.get_nah_votes }}"><button class="btn float-right" name="no-button" vote-event="{% url 'vote' %}" onclick=vote({{ user.id }},{{ event.id }},0)>Vote No</button></p>
+                </div>
+                <p>Invite Link: {{ request.scheme }}://{{ request.get_host }}{% url 'event_join' event.id %}</p>
+                {% if event.creator.user.id == user.id %}
+                    <button onclick=plan({{ event.id }}) id="event-is-on-{{ event.id }}" class="btn" name="plan-button"> Event is planned!</button>
+                    <a href="{% url 'event_edit' event.id %}"><button class="btn btn-primary float-right" name="edit-event-button">Edit</button></a>
+                    <a href="{% url 'event_delete' event.id %}"><button class="btn btn-danger float-right mr-1" name="delete-event-button">Delete</button></a>
+                {% endif %}
+            </li>
+            {% elif event.state == "P2" %}
+            <li class="list-group-item">
+                <div id="list-group-item-{{ event.id }}">
+                    <a href="{% url 'event_detail' event.id %}">{{ event }} </a><span class="float-right" id="status-{{ event.id }}">{{ event.get_state_display }}<i class="bi bi-hourglass-top" name="event-icon"></i></span>
+                    <hr>
+                    <h6>Attenders:</h6>
+                    <div class="card">
+                        <ul class="list-group">
+                        {% for attender in event.attender.all %}
+                            <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{ attender.user }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <br>
+                </div>
+                <p>Invite Link: {{ request.scheme }}://{{ request.get_host }}{% url 'event_join' event.id %}</p>
+            </li>
+            {% elif event.state == "H1" %}
+            <li class="list-group-item">
+                <div id="list-group-item-{{ event.id }}">
+                    <a href="{% url 'event_detail' event.id %}">{{ event }} </a><span class="float-right" id="status-{{ event.id }}">{{ event.get_state_display }}<i class="bi bi-hourglass-split" name="event-icon"></i></span>
+                    <hr>
+                    <h6>Attenders:</h6>
+                    <div class="card">
+                        <ul class="list-group">
+                        {% for attender in event.attender.all %}
+                            <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{ attender.user }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <br>
+                </div>
+            </li>
+            {% elif event.state == "H2" %}
+            <li class="list-group-item">
+                <div id="list-group-item-{{ event.id }}">
+                    <a href="{% url 'event_detail' event.id %}">{{ event }} </a><span class="float-right" id="status-{{ event.id }}">{{ event.get_state_display }}<i class="bi bi-hourglass-bottom" name="event-icon"></i></span>
+                    <hr>
+                    <h6>Attenders:</h6>
+                    <div class="card">
+                        <ul class="list-group">
+                        {% for attender in event.attender.all %}
+                            <li class="list-group-item"><a href="{% url 'profile' attender.user %}" class="text-decoration-none">{{ attender.user }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <br>
+                </div>
+            </li>
+            {% elif event.state == "N" %}
+            <li class="list-group-item">
+                <div id="list-group-item-{{ event.id }}">
+                    <a href="{% url 'event_detail' event.id %}">{{ event }} </a><span class="float-right" id="status-{{ event.id }}">{{ event.get_state_display }}<i class="bi bi-x-lg" name="event-icon"></i></span>
+                    <hr>
+                </div>
+            </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+
+</div>
+<nav aria-label="..." >
+    <ul class="pagination pagination-sm justify-content-center">
+        {% for i in page_list_event %}
+        <li class="page-item {% if current_page == i %}active{% endif %}" id="pagination-event-li-{{ i }}"><a class="page-link" onclick=paginate_event({{ i }},"{{ event_objects_type }}") >{{ i }}</a></li>
+        {% endfor %}
+    </ul>
+</nav>

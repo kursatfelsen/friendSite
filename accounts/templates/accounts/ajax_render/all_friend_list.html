@@ -1,0 +1,5 @@
+<ul class="list-group" id="allfriend-list">
+{% for user_friend in friend.friendWith.all %}
+  <li class="list-group-item" id="friend-{{ user_friend.user.id }}"><a href="{% url 'profile' user_friend.user %}">{{ user_friend.user.username }}</a> {% if request.user == user %}<button onclick=remove_friend({{ user_friend.id }}) class="btn btn-danger" name="danger-button">Remove friend</button>{% endif %}</li>
+{% endfor %}
+</ul>

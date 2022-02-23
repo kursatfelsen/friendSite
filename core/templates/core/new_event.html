@@ -9,7 +9,7 @@
 
 {% block body %}
 <div id="div-1">
-<form action="{% url 'new_event_post' %}" id="address-form" method="POST">
+<form action="{% url 'new_event' %}" id="address-form" method="POST">
     {% for error in form.non_field_errors %}
         <div class="alert alert-warning" role="alert">{{ error }}</div>
     {% endfor %}

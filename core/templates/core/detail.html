@@ -25,7 +25,9 @@
     </div>
   </div>
 </div>
+
 <br>
+
 <div class="container">
   <div class="row">
     <div class="row text-center">
@@ -47,7 +49,7 @@
         </div>
         {% endif %}
         <div class="row">
-          <form action="{% url 'new_event_get' %}" method="GET"> <button class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Create a new event</button></form>
+          <form action="{% url 'new_event' %}" method="GET">  <input type="hidden" value="{{group.id}}" name="group_id"><button class="btn mb-5 mx-auto col-12 col-sm-4" id="create-event-button">Create a new event</button></form>
         </div>
       </div>
       <div class="col align-content-center">

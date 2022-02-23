@@ -52,7 +52,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group">
                                     <a href="{% url 'detail' group.id %}"><button type="button" class="btn btn-sm btn-outline-primary mr-2" name="view-button">View</button></a>
-                                    <a href="{% url 'edit_group' group.id %}"><button type="button" class="btn btn-sm btn-outline-primary" name="edit-button">Edit</button></a>
+                                    {% if group.creator == request.user %}<a href="{% url 'edit_group' group.id %}"><button type="button" class="btn btn-sm btn-outline-primary" name="edit-button">Edit</button></a>{% endif %}
                                     </div>
                                     <small class="text-white">{% if group.first_upcoming_event %} Next Event: {{ group.first_upcoming_event.start_date | naturaltime }}{% else %} There are no upcoming events.{% endif %}</small>
                                 </div>

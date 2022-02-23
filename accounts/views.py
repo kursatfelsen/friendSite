@@ -175,13 +175,10 @@ class ProfileEditView(LoginRequiredMixin, View):
             return redirect('profile', username=request.user.username)
 
     def post(self, request, username):
-        form_data = request.POST.copy()
-        form_data['user-user_id'] = request.user.id
-        form_data['friend-id'] = request.user.friend.id
         user = request.user
         friend = request.user.friend
-        user_form = UserProfileForm(form_data, prefix="user",instance=user)
-        friend_form = FriendProfileForm(form_data, prefix="friend",instance=friend)
+        user_form = UserProfileForm(request.POST, prefix="user",instance=user)
+        friend_form = FriendProfileForm(request.POST, prefix="friend",instance=friend)
         if user_form.is_valid() and friend_form.is_valid():  # All validation rules pass
             user_form.save()
             friend_form.save()

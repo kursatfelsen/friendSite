@@ -7,7 +7,7 @@
 <ul>
 {% for time in full_list %}
 <li>
-    <form action="{% url 'new_event_post' %}" method="GET">
+    <form action="{% url 'new_event' %}" method="GET">
     {% for interval in time %}
         {% if forloop.counter == 1 %}
         <input type="text" value='{{interval}}' name="start_date">

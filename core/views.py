@@ -24,7 +24,7 @@ from .algorithms import k_means_event
 
 # /
 class HomePageView(View):
-    """Web Site's homepage. Friend groups are shown if user is logged in and have groups."""
+    """Web Site's homepage. Friend groups are shown if user is logged in and has groups."""
 
     def render(self, request):
         if len(self.upcoming_events) >= 1:
@@ -157,7 +157,10 @@ class GroupEditView(CustomLoginRequiredMixin, View):
         return self.render(request)
 
     def post(self, request, group_id):
-        form = NewGroupForm(request.POST)
+        form_data = request.POST.copy()
+        form_data['creator'] = request.user.id
+        form = NewGroupForm(form_data)
+        print(form)
         if form.is_valid():
             group = FriendGroup.objects.get(id=group_id)
             group.name = form.cleaned_data['name']
@@ -166,6 +169,7 @@ class GroupEditView(CustomLoginRequiredMixin, View):
             # This should be done here because it can be corrupted in front
             group.creator = request.user
             group.save()
+            messages.success(request, 'Successfully updated')
             return redirect('detail', group_id=group.id)
         messages.error(request, 'Form is not valid')
         return redirect('edit_group', group_id=group_id)
@@ -184,24 +188,30 @@ class NewEventView(CustomLoginRequiredMixin, View):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         self.form = NewEventForm(
-            initial={'creator': friend, 'group': group_id, 'start_date': start_date, 'end_date': end_date})
+            initial={
+                'creator': friend,
+                'group': group_id,
+                'start_date': start_date,
+                'end_date': end_date}
+        )
         return self.render(request)
 
     def post(self, request):
         event_id = request.POST.get('event-id')
-        # email_list = []
-        # for friend in event.group.get_friends():
-        #     email_list.append(friend.user.email)
-        # send_mail(
-        # 'New Event Created',#Subject
-        # f'{event.creator} created a new event.Click to see it! http://127.0.0.1:8000/detail/{event.group.id}', #Message
-        # 'kursat002@gmail.com', #from
-        # email_list, #to
-        # fail_silently=False,
-        # )
+
         form = NewEventForm(request.POST)
         if form.is_valid():
             event = form.save()
+            email_list = []
+            for friend in event.group.get_friends():
+                email_list.append(friend.user.email)
+            send_mail(
+            'New Event Created',#Subject
+            f'{event.creator} created a new event.Click to see it! http://127.0.0.1:8000/detail/{event.group.id}', #Message
+            'kursatfelsen@gmail.com', #from
+            email_list, #to
+            fail_silently=False,
+            )
             try:
                 relationship = BadgeFriendRelationship.objects.filter(
                     Q(badge__name='Newbie') & Q(owner__id=event.creator.id))
@@ -279,10 +289,10 @@ class LocationSetView(CustomLoginRequiredMixin, View):
 
     def get(self, request, event_id):
         form_location = LocationForm()
-        context={
-            'form_location': form_location, 
+        context = {
+            'form_location': form_location,
             'event_id': event_id,
-            }
+        }
         return render(request, 'core/set_location.html', context)
 
     def post(self, request, event_id):
@@ -294,15 +304,13 @@ class LocationSetView(CustomLoginRequiredMixin, View):
             if self.location_form.is_valid():
                 location = self.location_form.save()
             else:
-                return redirect('location_set',event_id = event_id)
+                return redirect('location_set', event_id=event_id)
 
         event = Event.objects.get(id=event_id)
         event.location = location
         event.save()
 
         return redirect('event_detail', event_id=event.id)
-
-        
 
 
 class LocationListView(View):

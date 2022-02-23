@@ -56,11 +56,10 @@ class NewGroupForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'creator': forms.TextInput(attrs={  # This field is not for taking input, just for giving info to user
-                'readonly': 'readonly',
+                'readonly': 'true',
                 'id': 'creator',
             }),
         }
-
 
 class LocationForm(forms.ModelForm):
     class Meta:

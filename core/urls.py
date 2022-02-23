@@ -14,9 +14,7 @@ urlpatterns = [
          GroupEditView.as_view(), name='edit_group'),
 
     # Event
-    path('event/newevent/', NewEventView.as_view(), name='new_event_post'),
-    path('event/newevent/',
-         NewEventView.as_view(), name='new_event_get'),
+    path('event/newevent/', NewEventView.as_view(), name='new_event'),
     path('event/detail/<int:event_id>',
          EventDetailView.as_view(), name='event_detail'),
     path('event/edit/<int:event_id>', EventEditView.as_view(), name='event_edit'),
